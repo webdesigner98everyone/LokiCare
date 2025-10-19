@@ -1,0 +1,64 @@
+{
+  "mascota": {
+    "nombre": "Loki",
+    "especie": "Canino",
+    "raza": "Pomerania",
+    "sexo": "Macho",
+    "fechaNacimiento": "2023-07-04",
+    "propietario": {
+      "nombre": "Luis Forero",
+      "telefono": "3163449117"
+    }
+  },
+  "vacunas": [
+    {
+      "fecha": "2023-12-06",
+      "producto": "Canigen MHA Puppy",
+      "veterinario": "Daniel Gutierrez",
+      "proxima": "2023-12-27"
+    },
+    {
+      "fecha": "2023-12-17",
+      "producto": "Canigen MHA PPI/L",
+      "veterinario": "Daniel Gutierrez",
+      "proxima": "2024-01-17"
+    },
+    {
+      "fecha": "2024-01-17",
+      "producto": "Nobivac DHPPI + Nobivac RL",
+      "veterinario": "N/A",
+      "proxima": "2025-01-17"
+    },
+    {
+      "fecha": "2025-03-08",
+      "producto": "Canigen LR + MHA PPI",
+      "veterinario": "N/A",
+      "proxima": "2026-03-08"
+    }
+  ],
+  "desparasitaciones": {
+    "interna": [
+      { "fecha": "2023-11-30", "producto": "Rondel Puppy", "proxima": "2023-11-30" },
+      { "fecha": "2024-03-30", "producto": "Simparic Trio", "proxima": "2024-07-30" },
+      { "fecha": "2024-07-20", "producto": "Canisround", "proxima": "2024-09-20" },
+      { "fecha": "2024-11-20", "producto": "Simparic Trio", "proxima": "2024-11-20" },
+      { "fecha": "2025-03-02", "producto": "Ya se lecho", "proxima": "2025-06-02" },
+      { "fecha": "2025-06-27", "producto": "Galacal Pool", "proxima": "2025-09-27" },
+      { "fecha": "2025-08-06", "producto": "Nexgard", "proxima": "2025-08-06" }
+    ],
+    "externa": [
+      { "fecha": "2023-11-30", "producto": "Nexgard", "proxima": "2024-01-30" },
+      { "fecha": "2024-07-20", "producto": "Simparic Trio", "proxima": "2024-07-30" },
+      { "fecha": "2024-09-20", "producto": "Simparic Trio", "proxima": "2024-11-20" },
+      { "fecha": "2025-03-02", "producto": "N/A", "proxima": "N/A" },
+      { "fecha": "2025-08-06", "producto": "Nexgard", "proxima": "2025-08-06" }
+    ]
+  },
+  "banos": [
+    {
+      "fecha": "2025-10-03",
+      "hora": "11:00 AM",
+      "observaciones": "Baño general con shampoo hipoalergénico"
+    }
+  ]
+}
