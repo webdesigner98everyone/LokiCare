@@ -1,33 +1,72 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Tabs } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { View } from "react-native";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+        tabBarActiveTintColor: "#007AFF", // azul moderno
+        tabBarInactiveTintColor: "#999",
+        tabBarStyle: {
+          backgroundColor: "#fff",
+          borderTopColor: "#eee",
+          height: 60,
+          paddingBottom: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: "600",
+        },
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Inicio",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" color={color} size={size} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="vacunas"
+        options={{
+          title: "Vacunas",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="medkit" color={color} size={size} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="banos"
+        options={{
+          title: "Baños",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="water" color={color} size={size} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="desparasitacion"
+        options={{
+          title: "Desparasitación",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="bug" color={color} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="perfil"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Perfil",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="paw" color={color} size={size} />
+          ),
         }}
       />
     </Tabs>

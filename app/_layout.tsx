@@ -1,56 +1,37 @@
-import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Stack, Redirect } from "expo-router";
+import { View, Text, Platform, StatusBar } from "react-native";
 
 export default function Layout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerStyle: { backgroundColor: '#0077b6' },
-        headerTintColor: '#fff',
-        tabBarActiveTintColor: '#0077b6',
-        tabBarInactiveTintColor: '#777',
-        tabBarStyle: { backgroundColor: '#fff', height: 60, paddingBottom: 5 },
-      }}
-    >
-      <Tabs.Screen
-        name="(tabs)/home"
-        options={{
-          title: 'Inicio',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
-        }}
-      />
+    <>
+      {/* Redirige automáticamente al Home */}
+      <Redirect href="/home" />
 
-      <Tabs.Screen
-        name="(tabs)/vacunas"
-        options={{
-          title: 'Vacunas',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="medkit" size={size} color={color} />
+      <Stack
+        screenOptions={{
+          header: () => (
+            <View
+              style={{
+                backgroundColor: "#0077b6",
+                paddingTop: Platform.OS === "android" ? (StatusBar.currentHeight || 0) + 10 : 50,
+                paddingBottom: 15,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 20,
+                  fontWeight: "bold",
+                }}
+              >
+                Ficha Médica de Loki 🐶
+              </Text>
+            </View>
           ),
         }}
       />
-
-      <Tabs.Screen
-        name="(tabs)/desparasitacion"
-        options={{
-          title: 'Desparasitación',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bug" size={size} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="(tabs)/banos"
-        options={{
-          title: 'Baños',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="water" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    </>
   );
 }

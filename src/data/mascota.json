@@ -5,9 +5,13 @@
     "raza": "Pomerania",
     "sexo": "Macho",
     "fechaNacimiento": "2023-07-04",
+    "Color":"",
+    "microchip": "",
     "propietario": {
       "nombre": "Luis Forero",
-      "telefono": "3163449117"
+      "telefono": "3163449117",
+      "direccion":"Cra 121a 47a-46",
+      "email":"luisfoguz1198@gmail.com"
     }
   },
   "vacunas": [
@@ -44,21 +48,22 @@
       { "fecha": "2024-11-20", "producto": "Simparic Trio", "proxima": "2024-11-20" },
       { "fecha": "2025-03-02", "producto": "Ya se lecho", "proxima": "2025-06-02" },
       { "fecha": "2025-06-27", "producto": "Galacal Pool", "proxima": "2025-09-27" },
-      { "fecha": "2025-08-06", "producto": "Nexgard", "proxima": "2025-08-06" }
+      { "fecha": "2025-08-06", "producto": "Nexgard", "proxima": "2025-08-06" },
+      { "fecha": "2025-10-14", "producto": "Rondel Puppy", "proxima": "2026-01-14" }
     ],
     "externa": [
       { "fecha": "2023-11-30", "producto": "Nexgard", "proxima": "2024-01-30" },
       { "fecha": "2024-07-20", "producto": "Simparic Trio", "proxima": "2024-07-30" },
       { "fecha": "2024-09-20", "producto": "Simparic Trio", "proxima": "2024-11-20" },
       { "fecha": "2025-03-02", "producto": "N/A", "proxima": "N/A" },
-      { "fecha": "2025-08-06", "producto": "Nexgard", "proxima": "2025-08-06" }
+      { "fecha": "2025-08-06", "producto": "Nexgard", "proxima": "2025-08-12" }
     ]
   },
   "banos": [
     {
-      "fecha": "2025-10-03",
+      "fecha": "2025-10-01",
       "hora": "11:00 AM",
-      "observaciones": "Baño general con shampoo hipoalergénico"
+      "observaciones": "Cita para Baño y Grooming."
     }
   ]
 }
