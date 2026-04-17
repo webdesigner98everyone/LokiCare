@@ -1,0 +1,115 @@
+import React, { useState, useCallback } from 'react';
+import {
+  View, Text, StyleSheet, Image, ScrollView,
+  TextInput, TouchableOpacity, Alert, ActivityIndicator,
+} from 'react-native';
+import { useFocusEffect } from 'expo-router';
+import { getMascota, updateMascota, updatePropietario } from '../../src/services/api';
+import type { Mascota, Propietario } from '../../src/types';
+
+interface FieldProps {
+  label: string;
+  value: string;
+  editable: boolean;
+  onChange: (text: string) => void;
+}
+
+function Field({ label, value, editable, onChange }: FieldProps) {
+  return (
+    <View style={styles.fieldContainer}>
+      <Text style={styles.label}>{label}:</Text>
+      <TextInput style={[styles.input, !editable && styles.readOnly]} value={value || ''} editable={editable} onChangeText={onChange} />
+    </View>
+  );
+}
+
+export default function PerfilScreen() {
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [mascota, setMascota] = useState<Mascota>({} as Mascota);
+  const [propietario, setPropietario] = useState<Propietario>({} as Propietario);
+
+  useFocusEffect(
+    useCallback(() => {
+      getMascota()
+        .then((data) => {
+          setMascota(data);
+          setPropietario({
+            nombre: data.propietario_nombre,
+            telefono: data.telefono,
+            direccion: data.direccion,
+            email: data.email,
+          });
+        })
+        .catch(() => Alert.alert('Error', 'No se pudo cargar el perfil'))
+        .finally(() => setLoading(false));
+    }, [])
+  );
+
+  const handleSave = async () => {
+    try {
+      await updateMascota({
+        nombre: mascota.nombre, especie: mascota.especie, raza: mascota.raza,
+        sexo: mascota.sexo, color: mascota.color, fecha_nacimiento: mascota.fecha_nacimiento, microchip: mascota.microchip,
+      });
+      await updatePropietario(propietario);
+      Alert.alert('✅ Datos actualizados');
+      setIsEditing(false);
+    } catch {
+      Alert.alert('❌ Error', 'No se pudieron guardar los datos');
+    }
+  };
+
+  if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#0077b6" /></View>;
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Image source={require('../../assets/images/loki.jpg')} style={styles.image} />
+      <Text style={styles.name}>{mascota.nombre}</Text>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>🐾 Información de la Mascota</Text>
+        <Field label="Nombre" value={mascota.nombre} editable={isEditing} onChange={(t) => setMascota({ ...mascota, nombre: t })} />
+        <Field label="Especie" value={mascota.especie} editable={isEditing} onChange={(t) => setMascota({ ...mascota, especie: t })} />
+        <Field label="Raza" value={mascota.raza} editable={isEditing} onChange={(t) => setMascota({ ...mascota, raza: t })} />
+        <Field label="Sexo" value={mascota.sexo} editable={isEditing} onChange={(t) => setMascota({ ...mascota, sexo: t })} />
+        <Field label="Color" value={mascota.color} editable={isEditing} onChange={(t) => setMascota({ ...mascota, color: t })} />
+        <Field label="Nacimiento" value={mascota.fecha_nacimiento} editable={isEditing} onChange={(t) => setMascota({ ...mascota, fecha_nacimiento: t })} />
+        <Field label="Microchip" value={mascota.microchip} editable={isEditing} onChange={(t) => setMascota({ ...mascota, microchip: t })} />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>👤 Información del Propietario</Text>
+        <Field label="Nombre" value={propietario.nombre} editable={isEditing} onChange={(t) => setPropietario({ ...propietario, nombre: t })} />
+        <Field label="Teléfono" value={propietario.telefono} editable={isEditing} onChange={(t) => setPropietario({ ...propietario, telefono: t })} />
+        <Field label="Dirección" value={propietario.direccion} editable={isEditing} onChange={(t) => setPropietario({ ...propietario, direccion: t })} />
+        <Field label="Email" value={propietario.email} editable={isEditing} onChange={(t) => setPropietario({ ...propietario, email: t })} />
+      </View>
+
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: isEditing ? '#0077b6' : '#00b4d8' }]}
+        onPress={() => (isEditing ? handleSave() : setIsEditing(true))}
+      >
+        <Text style={styles.buttonText}>{isEditing ? 'Guardar Cambios' : 'Editar Información'}</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { alignItems: 'center', paddingVertical: 30, backgroundColor: '#f9f9f9' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  image: { width: 160, height: 160, borderRadius: 80, marginBottom: 20 },
+  name: { fontSize: 26, fontWeight: 'bold', color: '#0077b6', marginBottom: 8 },
+  section: {
+    width: '90%', backgroundColor: '#fff', padding: 15, borderRadius: 12,
+    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, elevation: 2, marginBottom: 25,
+  },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#0077b6', marginBottom: 8 },
+  fieldContainer: { marginBottom: 12 },
+  label: { fontWeight: '600', color: '#333', marginBottom: 4 },
+  input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 8 },
+  readOnly: { backgroundColor: '#f1f1f1' },
+  button: { padding: 15, borderRadius: 10, alignItems: 'center', width: '90%', marginBottom: 50 },
+  buttonText: { color: '#fff', fontWeight: 'bold' },
+});
