@@ -6,11 +6,11 @@ export const getAll = async (req: Request, res: Response) => {
   try {
     const { tipo } = req.query;
     let query = 'SELECT * FROM desparasitaciones WHERE mascota_id=?';
-    const params: (string | number)[] = [req.params.mascotaId];
+    const params: any[] = [req.params.mascotaId];
 
-    if (tipo) {
+    if (typeof tipo === 'string') {
       query += ' AND tipo=?';
-      params.push(tipo as string);
+      params.push(tipo);
     }
     query += ' ORDER BY fecha DESC';
 
