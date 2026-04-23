@@ -4,8 +4,11 @@ import {
   TextInput, TouchableOpacity, Alert, ActivityIndicator,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { getMascota, updateMascota, updatePropietario } from '../../src/services/api';
+import * as ImagePicker from 'expo-image-picker';
+import { getMascota, updateMascota, updatePropietario, uploadFoto, BASE_URL } from '../../src/services/api';
 import type { Mascota, Propietario } from '../../src/types';
+
+const DEFAULT_IMAGE = require('../../assets/images/loki.jpg');
 
 interface FieldProps {
   label: string;
@@ -28,12 +31,14 @@ export default function PerfilScreen() {
   const [loading, setLoading] = useState(true);
   const [mascota, setMascota] = useState<Mascota>({} as Mascota);
   const [propietario, setPropietario] = useState<Propietario>({} as Propietario);
+  const [fotoUri, setFotoUri] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       getMascota()
         .then((data) => {
           setMascota(data);
+          setFotoUri(data.foto_url ? `${BASE_URL}${data.foto_url}` : null);
           setPropietario({
             nombre: data.propietario_nombre,
             telefono: data.telefono,
@@ -45,6 +50,40 @@ export default function PerfilScreen() {
         .finally(() => setLoading(false));
     }, [])
   );
+
+  const pickImage = () => {
+    Alert.alert('Cambiar foto', '¿De dónde quieres seleccionar la foto?', [
+      {
+        text: 'Cámara',
+        onPress: async () => {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== 'granted') return Alert.alert('Permiso denegado', 'Se necesita acceso a la cámara');
+          const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 });
+          if (!result.canceled) handleUpload(result.assets[0].uri);
+        },
+      },
+      {
+        text: 'Galería',
+        onPress: async () => {
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== 'granted') return Alert.alert('Permiso denegado', 'Se necesita acceso a la galería');
+          const result = await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 });
+          if (!result.canceled) handleUpload(result.assets[0].uri);
+        },
+      },
+      { text: 'Cancelar', style: 'cancel' },
+    ]);
+  };
+
+  const handleUpload = async (uri: string) => {
+    try {
+      const { foto_url } = await uploadFoto(uri);
+      setFotoUri(`${BASE_URL}${foto_url}`);
+      Alert.alert('✅ Foto actualizada');
+    } catch {
+      Alert.alert('❌ Error', 'No se pudo subir la foto');
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -64,7 +103,12 @@ export default function PerfilScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Image source={require('../../assets/images/loki.jpg')} style={styles.image} />
+      <TouchableOpacity onPress={pickImage}>
+        <Image source={fotoUri ? { uri: fotoUri } : DEFAULT_IMAGE} style={styles.image} />
+        <View style={styles.cameraIcon}>
+          <Text style={styles.cameraText}>📷</Text>
+        </View>
+      </TouchableOpacity>
       <Text style={styles.name}>{mascota.nombre}</Text>
 
       <View style={styles.section}>
@@ -100,6 +144,12 @@ const styles = StyleSheet.create({
   container: { alignItems: 'center', paddingVertical: 30, backgroundColor: '#f9f9f9' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   image: { width: 160, height: 160, borderRadius: 80, marginBottom: 20 },
+  cameraIcon: {
+    position: 'absolute', bottom: 20, right: 0,
+    backgroundColor: '#0077b6', borderRadius: 20, width: 40, height: 40,
+    justifyContent: 'center', alignItems: 'center', elevation: 3,
+  },
+  cameraText: { fontSize: 20 },
   name: { fontSize: 26, fontWeight: 'bold', color: '#0077b6', marginBottom: 8 },
   section: {
     width: '90%', backgroundColor: '#fff', padding: 15, borderRadius: 12,

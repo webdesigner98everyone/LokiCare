@@ -1,6 +1,18 @@
 import { Request, Response } from 'express';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
+import multer from 'multer';
+import path from 'path';
 import db from '../config/db';
+
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, '..', '..', 'uploads'),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `mascota-${Date.now()}${ext}`);
+  },
+});
+
+export const upload = multer({ storage });
 
 export const getMascota = async (req: Request, res: Response) => {
   try {
@@ -42,6 +54,17 @@ export const updatePropietario = async (req: Request, res: Response) => {
       [nombre, telefono, direccion, email, mascota[0].propietario_id]
     );
     res.json({ message: 'Propietario actualizado' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const uploadFoto = async (req: Request, res: Response) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No se envió ninguna imagen' });
+    const fotoUrl = `/uploads/${req.file.filename}`;
+    await db.query('UPDATE mascotas SET foto_url=? WHERE id=?', [fotoUrl, req.params.id]);
+    res.json({ message: 'Foto actualizada', foto_url: fotoUrl });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { getResumen } from '../../src/services/api';
+import { getResumen, BASE_URL } from '../../src/services/api';
 import { formatDate } from '../../src/utils/format';
 import type { Resumen } from '../../src/types';
 
@@ -22,9 +22,13 @@ export default function HomeScreen() {
 
   const { mascota, ultimaVacuna, ultimaDesparasitacionInterna, ultimaDesparasitacionExterna, ultimoBano } = data;
 
+  const fotoSource = mascota.foto_url
+    ? { uri: `${BASE_URL}${mascota.foto_url}` }
+    : require('../../assets/images/loki.jpg');
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Image source={require('../../assets/images/loki.jpg')} style={styles.image} />
+      <Image source={fotoSource} style={styles.image} />
       <Text style={styles.title}>Ficha Médica de {mascota.nombre}</Text>
       <Text style={styles.subtitle}>{mascota.raza} • {mascota.especie}</Text>
       <Text style={styles.text}>Propietario: {mascota.propietario_nombre}</Text>

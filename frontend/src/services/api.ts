@@ -3,6 +3,7 @@ import type { Resumen, Mascota, Vacuna, Desparasitacion, Bano, Propietario } fro
 // const API_URL = 'http://10.0.2.2:3001/api'; // Android emulator
 // const API_URL = 'http://localhost:3001/api'; // Web
 const API_URL = 'http://192.168.1.7:3001/api'; // Dispositivo físico
+export const BASE_URL = 'http://192.168.1.7:3001';
 
 const MASCOTA_ID = 1;
 
@@ -22,6 +23,24 @@ export const updateMascota = (data: Partial<Mascota>) =>
   request(`/mascota/${MASCOTA_ID}`, { method: 'PUT', body: JSON.stringify(data) });
 export const updatePropietario = (data: Propietario) =>
   request(`/mascota/${MASCOTA_ID}/propietario`, { method: 'PUT', body: JSON.stringify(data) });
+
+export const uploadFoto = async (uri: string): Promise<{ foto_url: string }> => {
+  const formData = new FormData();
+  const filename = uri.split('/').pop() || 'foto.jpg';
+  const ext = filename.split('.').pop();
+  formData.append('foto', {
+    uri,
+    name: filename,
+    type: `image/${ext}`,
+  } as any);
+
+  const res = await fetch(`${API_URL}/mascota/${MASCOTA_ID}/foto`, {
+    method: 'POST',
+    body: formData,
+  });
+  if (!res.ok) throw new Error(`Error ${res.status}`);
+  return res.json();
+};
 
 // Vacunas
 export const getVacunas = () => request<Vacuna[]>(`/vacunas/mascota/${MASCOTA_ID}`);
