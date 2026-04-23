@@ -5,6 +5,8 @@ import {
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { getBanos, createBano, deleteBano } from '../../src/services/api';
+import DateField from '../../src/components/DateField';
+import TimeField from '../../src/components/TimeField';
 import type { Bano } from '../../src/types';
 
 type BanoForm = { fecha: string; hora: string; observaciones: string };
@@ -54,8 +56,8 @@ export default function BanosScreen() {
 
       {showForm && (
         <View style={styles.form}>
-          <TextInput style={styles.input} placeholder="Fecha (YYYY-MM-DD)" value={form.fecha} onChangeText={(t) => setForm({ ...form, fecha: t })} />
-          <TextInput style={styles.input} placeholder="Hora (ej: 11:00 AM)" value={form.hora} onChangeText={(t) => setForm({ ...form, hora: t })} />
+          <DateField label="Fecha" value={form.fecha} onChange={(d) => setForm({ ...form, fecha: d })} />
+          <TimeField label="Hora" value={form.hora} onChange={(t) => setForm({ ...form, hora: t })} />
           <TextInput style={styles.input} placeholder="Observaciones" value={form.observaciones} onChangeText={(t) => setForm({ ...form, observaciones: t })} multiline />
           <TouchableOpacity style={styles.saveBtn} onPress={handleAdd}>
             <Text style={styles.saveBtnText}>Guardar</Text>

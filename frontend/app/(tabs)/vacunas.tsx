@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { getVacunas, createVacuna, deleteVacuna } from '../../src/services/api';
+import DateField from '../../src/components/DateField';
 import type { Vacuna } from '../../src/types';
 
 type VacunaForm = { fecha: string; producto: string; veterinario: string; proxima: string };
@@ -54,10 +55,10 @@ export default function VacunasScreen() {
 
       {showForm && (
         <View style={styles.form}>
-          <TextInput style={styles.input} placeholder="Fecha (YYYY-MM-DD)" value={form.fecha} onChangeText={(t) => setForm({ ...form, fecha: t })} />
+          <DateField label="Fecha" value={form.fecha} onChange={(d) => setForm({ ...form, fecha: d })} />
           <TextInput style={styles.input} placeholder="Producto" value={form.producto} onChangeText={(t) => setForm({ ...form, producto: t })} />
           <TextInput style={styles.input} placeholder="Veterinario" value={form.veterinario} onChangeText={(t) => setForm({ ...form, veterinario: t })} />
-          <TextInput style={styles.input} placeholder="Próxima (YYYY-MM-DD)" value={form.proxima} onChangeText={(t) => setForm({ ...form, proxima: t })} />
+          <DateField label="Próxima" value={form.proxima} onChange={(d) => setForm({ ...form, proxima: d })} />
           <TouchableOpacity style={styles.saveBtn} onPress={handleAdd}>
             <Text style={styles.saveBtnText}>Guardar</Text>
           </TouchableOpacity>
