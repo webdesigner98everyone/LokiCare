@@ -6,6 +6,8 @@ import {
 import { useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { getMascota, updateMascota, updatePropietario, uploadFoto, BASE_URL } from '../../src/services/api';
+import { formatDate } from '../../src/utils/format';
+import DateField from '../../src/components/DateField';
 import type { Mascota, Propietario } from '../../src/types';
 
 const DEFAULT_IMAGE = require('../../assets/images/loki.jpg');
@@ -118,7 +120,11 @@ export default function PerfilScreen() {
         <Field label="Raza" value={mascota.raza} editable={isEditing} onChange={(t) => setMascota({ ...mascota, raza: t })} />
         <Field label="Sexo" value={mascota.sexo} editable={isEditing} onChange={(t) => setMascota({ ...mascota, sexo: t })} />
         <Field label="Color" value={mascota.color} editable={isEditing} onChange={(t) => setMascota({ ...mascota, color: t })} />
-        <Field label="Nacimiento" value={mascota.fecha_nacimiento} editable={isEditing} onChange={(t) => setMascota({ ...mascota, fecha_nacimiento: t })} />
+        {isEditing ? (
+          <DateField label="Nacimiento" value={formatDate(mascota.fecha_nacimiento)} onChange={(d) => setMascota({ ...mascota, fecha_nacimiento: d })} />
+        ) : (
+          <Field label="Nacimiento" value={formatDate(mascota.fecha_nacimiento)} editable={false} onChange={() => {}} />
+        )}
         <Field label="Microchip" value={mascota.microchip} editable={isEditing} onChange={(t) => setMascota({ ...mascota, microchip: t })} />
       </View>
 
