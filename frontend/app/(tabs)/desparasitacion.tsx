@@ -6,6 +6,7 @@ import {
 import { useFocusEffect } from 'expo-router';
 import { getDesparasitaciones, createDesparasitacion, deleteDesparasitacion } from '../../src/services/api';
 import DateField from '../../src/components/DateField';
+import { formatDate } from '../../src/utils/format';
 import type { Desparasitacion } from '../../src/types';
 
 type DesparasitacionForm = { fecha: string; producto: string; proxima: string };
@@ -85,8 +86,8 @@ export default function DesparasitacionScreen() {
             <View style={styles.card}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.cardTitle}>{item.producto}</Text>
-                <Text style={styles.cardText}>📅 {item.fecha}</Text>
-                <Text style={styles.cardText}>⏭️ Próxima: {item.proxima || 'N/A'}</Text>
+                <Text style={styles.cardText}>📅 {formatDate(item.fecha)}</Text>
+                <Text style={styles.cardText}>⏭️ Próxima: {formatDate(item.proxima)}</Text>
               </View>
               <TouchableOpacity onPress={() => handleDelete(item.id)}>
                 <Text style={styles.deleteBtn}>🗑️</Text>

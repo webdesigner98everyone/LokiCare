@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { getResumen } from '../../src/services/api';
+import { formatDate } from '../../src/utils/format';
 import type { Resumen } from '../../src/types';
 
 export default function HomeScreen() {
@@ -51,14 +52,18 @@ const LABELS: Record<string, string> = {
   producto: 'Producto', fecha: 'Fecha', proxima: 'Próxima', hora: 'Hora', observaciones: 'Notas',
 };
 
+const DATE_FIELDS = ['fecha', 'proxima'];
+
 function ResumenCard({ titulo, item, campos }: ResumenCardProps) {
   if (!item) return null;
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{titulo}</Text>
-      {campos.map((c) => (
-        <Text key={c} style={styles.text}>{LABELS[c]}: {item[c]?.toString() || 'N/A'}</Text>
-      ))}
+      {campos.map((c) => {
+        const raw = item[c]?.toString() || null;
+        const display = DATE_FIELDS.includes(c) ? formatDate(raw) : (raw || 'N/A');
+        return <Text key={c} style={styles.text}>{LABELS[c]}: {display}</Text>;
+      })}
     </View>
   );
 }

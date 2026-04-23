@@ -7,6 +7,7 @@ import { useFocusEffect } from 'expo-router';
 import { getBanos, createBano, deleteBano } from '../../src/services/api';
 import DateField from '../../src/components/DateField';
 import TimeField from '../../src/components/TimeField';
+import { formatDate } from '../../src/utils/format';
 import type { Bano } from '../../src/types';
 
 type BanoForm = { fecha: string; hora: string; observaciones: string };
@@ -71,7 +72,7 @@ export default function BanosScreen() {
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.cardTitle}>📅 {item.fecha}</Text>
+              <Text style={styles.cardTitle}>📅 {formatDate(item.fecha)}</Text>
               <Text style={styles.cardText}>🕐 {item.hora || 'Sin hora'}</Text>
               <Text style={styles.cardText}>📝 {item.observaciones || 'Sin observaciones'}</Text>
             </View>
