@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, RefreshControl } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { getResumen, BASE_URL } from '../../src/services/api';
 import { formatDate } from '../../src/utils/format';
@@ -9,13 +9,21 @@ export default function HomeScreen() {
   const [data, setData] = useState<Resumen | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      getResumen()
-        .then(setData)
-        .catch((e: Error) => setError(e.message));
-    }, [])
-  );
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadData = () => {
+    getResumen()
+      .then(setData)
+      .catch((e: Error) => setError(e.message));
+  };
+
+  useFocusEffect(useCallback(() => { loadData(); }, []));
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    loadData();
+    setRefreshing(false);
+  };
 
   if (error) return <View style={styles.center}><Text style={styles.errorText}>❌ {error}</Text></View>;
   if (!data) return <View style={styles.center}><ActivityIndicator size="large" color="#0077b6" /></View>;
@@ -27,7 +35,7 @@ export default function HomeScreen() {
     : require('../../assets/images/loki.jpg');
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0077b6']} />}>
       <Image source={fotoSource} style={styles.image} />
       <Text style={styles.title}>Ficha Médica de {mascota.nombre}</Text>
       <Text style={styles.subtitle}>{mascota.raza} • {mascota.especie}</Text>

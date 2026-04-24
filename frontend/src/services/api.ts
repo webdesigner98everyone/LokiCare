@@ -63,4 +63,6 @@ export const deleteDesparasitacion = (id: number) => request(`/desparasitaciones
 export const getBanos = () => request<Bano[]>(`/banos/mascota/${MASCOTA_ID}`);
 export const createBano = (data: Omit<Bano, 'id' | 'mascota_id'>) =>
   request(`/banos/mascota/${MASCOTA_ID}`, { method: 'POST', body: JSON.stringify(data) });
+export const updateBano = (id: number, data: Omit<Bano, 'id' | 'mascota_id'>) =>
+  request(`/banos/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deleteBano = (id: number) => request(`/banos/${id}`, { method: 'DELETE' });

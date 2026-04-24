@@ -7,6 +7,7 @@ import { useFocusEffect } from 'expo-router';
 import { getVacunas, createVacuna, updateVacuna, deleteVacuna } from '../../src/services/api';
 import DateField from '../../src/components/DateField';
 import { formatDate } from '../../src/utils/format';
+import { isValidDate, isNotEmpty } from '../../src/utils/validation';
 import type { Vacuna } from '../../src/types';
 
 type VacunaForm = { fecha: string; producto: string; veterinario: string; proxima: string };
@@ -18,6 +19,7 @@ export default function VacunasScreen() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<VacunaForm>(EMPTY_FORM);
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -28,6 +30,12 @@ export default function VacunasScreen() {
   };
 
   useFocusEffect(useCallback(() => { load(); }, []));
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await getVacunas().then(setVacunas).catch(() => {});
+    setRefreshing(false);
+  };
 
   const openNew = () => {
     setEditingId(null);
@@ -53,7 +61,7 @@ export default function VacunasScreen() {
   };
 
   const handleSave = async () => {
-    if (!form.fecha || !form.producto) return Alert.alert('Campos requeridos', 'Fecha y producto son obligatorios');
+    if (!isValidDate(form.fecha) || !isNotEmpty(form.producto)) return Alert.alert('Campos requeridos', 'Fecha válida y producto son obligatorios');
     try {
       if (editingId) {
         await updateVacuna(editingId, form);
@@ -115,6 +123,8 @@ export default function VacunasScreen() {
       <FlatList
         data={vacunas}
         keyExtractor={(item) => item.id.toString()}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <TouchableOpacity style={{ flex: 1 }} onPress={() => openEdit(item)}>

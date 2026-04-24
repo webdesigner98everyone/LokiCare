@@ -7,6 +7,7 @@ import { useFocusEffect } from 'expo-router';
 import { getDesparasitaciones, createDesparasitacion, updateDesparasitacion, deleteDesparasitacion } from '../../src/services/api';
 import DateField from '../../src/components/DateField';
 import { formatDate } from '../../src/utils/format';
+import { isValidDate, isNotEmpty } from '../../src/utils/validation';
 import type { Desparasitacion } from '../../src/types';
 
 type DesparasitacionForm = { fecha: string; producto: string; proxima: string };
@@ -20,6 +21,7 @@ export default function DesparasitacionScreen() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<DesparasitacionForm>(EMPTY_FORM);
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = (t?: Tipo) => {
     setLoading(true);
@@ -30,6 +32,12 @@ export default function DesparasitacionScreen() {
   };
 
   useFocusEffect(useCallback(() => { load(); }, []));
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await getDesparasitaciones(tipo).then(setItems).catch(() => {});
+    setRefreshing(false);
+  };
 
   const switchTipo = (t: Tipo) => { setTipo(t); load(t); closeForm(); };
 
@@ -56,7 +64,7 @@ export default function DesparasitacionScreen() {
   };
 
   const handleSave = async () => {
-    if (!form.fecha || !form.producto) return Alert.alert('Campos requeridos', 'Fecha y producto son obligatorios');
+    if (!isValidDate(form.fecha) || !isNotEmpty(form.producto)) return Alert.alert('Campos requeridos', 'Fecha válida y producto son obligatorios');
     try {
       if (editingId) {
         await updateDesparasitacion(editingId, { ...form, tipo });
@@ -127,6 +135,8 @@ export default function DesparasitacionScreen() {
         <FlatList
           data={items}
           keyExtractor={(item) => item.id.toString()}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
           renderItem={({ item }) => (
             <View style={styles.card}>
               <TouchableOpacity style={{ flex: 1 }} onPress={() => openEdit(item)}>
