@@ -20,7 +20,7 @@ export default function DateField({ label, value, onChange }: DateFieldProps) {
 
   const currentDate = value ? new Date(value + 'T00:00:00') : new Date();
 
-  const handleChange = (date: Date) => {
+  const handleChange = (_event: any, date: Date) => {
     setShow(Platform.OS === 'ios');
     onChange(formatDate(date));
   };

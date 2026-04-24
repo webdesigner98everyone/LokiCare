@@ -19,7 +19,7 @@ function formatTime(date: Date): string {
 export default function TimeField({ label, value, onChange }: TimeFieldProps) {
   const [show, setShow] = useState(false);
 
-  const handleChange = (date: Date) => {
+  const handleChange = (_event: any, date: Date) => {
     setShow(Platform.OS === 'ios');
     onChange(formatTime(date));
   };
