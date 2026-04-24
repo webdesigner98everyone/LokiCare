@@ -55,6 +55,8 @@ export const getDesparasitaciones = (tipo: string) =>
   request<Desparasitacion[]>(`/desparasitaciones/mascota/${MASCOTA_ID}?tipo=${tipo}`);
 export const createDesparasitacion = (data: Omit<Desparasitacion, 'id' | 'mascota_id'>) =>
   request(`/desparasitaciones/mascota/${MASCOTA_ID}`, { method: 'POST', body: JSON.stringify(data) });
+export const updateDesparasitacion = (id: number, data: Omit<Desparasitacion, 'id' | 'mascota_id'>) =>
+  request(`/desparasitaciones/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deleteDesparasitacion = (id: number) => request(`/desparasitaciones/${id}`, { method: 'DELETE' });
 
 // Baños
