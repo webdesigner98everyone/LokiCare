@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface TimeFieldProps {
   label: string;
@@ -19,11 +19,9 @@ function formatTime(date: Date): string {
 export default function TimeField({ label, value, onChange }: TimeFieldProps) {
   const [show, setShow] = useState(false);
 
-  const handleChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
+  const handleChange = (date: Date) => {
     setShow(Platform.OS === 'ios');
-    if (selectedDate) {
-      onChange(formatTime(selectedDate));
-    }
+    onChange(formatTime(date));
   };
 
   return (
@@ -41,7 +39,8 @@ export default function TimeField({ label, value, onChange }: TimeFieldProps) {
           mode="time"
           is24Hour={false}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleChange}
+          onValueChange={handleChange}
+          onDismiss={() => setShow(false)}
         />
       )}
     </View>
