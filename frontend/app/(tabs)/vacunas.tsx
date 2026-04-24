@@ -57,20 +57,30 @@ export default function VacunasScreen() {
     try {
       if (editingId) {
         await updateVacuna(editingId, form);
+        Alert.alert('✅ Actualizado', 'La vacuna se actualizó correctamente');
       } else {
         await createVacuna(form);
+        Alert.alert('✅ Registrado', 'La vacuna se registró correctamente');
       }
       closeForm();
       load();
     } catch {
-      Alert.alert('Error', 'No se pudo guardar');
+      Alert.alert('❌ Error', 'No se pudo guardar la vacuna');
     }
   };
 
   const handleDelete = (id: number) => {
     Alert.alert('Eliminar', '¿Seguro que deseas eliminar esta vacuna?', [
       { text: 'Cancelar' },
-      { text: 'Eliminar', style: 'destructive', onPress: async () => { await deleteVacuna(id); load(); } },
+      { text: 'Eliminar', style: 'destructive', onPress: async () => {
+        try {
+          await deleteVacuna(id);
+          Alert.alert('✅ Eliminado', 'La vacuna se eliminó correctamente');
+          load();
+        } catch {
+          Alert.alert('❌ Error', 'No se pudo eliminar la vacuna');
+        }
+      } },
     ]);
   };
 

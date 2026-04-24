@@ -60,20 +60,30 @@ export default function DesparasitacionScreen() {
     try {
       if (editingId) {
         await updateDesparasitacion(editingId, { ...form, tipo });
+        Alert.alert('✅ Actualizado', 'La desparasitación se actualizó correctamente');
       } else {
         await createDesparasitacion({ ...form, tipo });
+        Alert.alert('✅ Registrado', 'La desparasitación se registró correctamente');
       }
       closeForm();
       load();
     } catch {
-      Alert.alert('Error', 'No se pudo guardar');
+      Alert.alert('❌ Error', 'No se pudo guardar la desparasitación');
     }
   };
 
   const handleDelete = (id: number) => {
     Alert.alert('Eliminar', '¿Seguro?', [
       { text: 'Cancelar' },
-      { text: 'Eliminar', style: 'destructive', onPress: async () => { await deleteDesparasitacion(id); load(); } },
+      { text: 'Eliminar', style: 'destructive', onPress: async () => {
+        try {
+          await deleteDesparasitacion(id);
+          Alert.alert('✅ Eliminado', 'La desparasitación se eliminó correctamente');
+          load();
+        } catch {
+          Alert.alert('❌ Error', 'No se pudo eliminar la desparasitación');
+        }
+      } },
     ]);
   };
 
