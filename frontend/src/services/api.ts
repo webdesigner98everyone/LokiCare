@@ -46,6 +46,8 @@ export const uploadFoto = async (uri: string): Promise<{ foto_url: string }> => 
 export const getVacunas = () => request<Vacuna[]>(`/vacunas/mascota/${MASCOTA_ID}`);
 export const createVacuna = (data: Omit<Vacuna, 'id' | 'mascota_id'>) =>
   request(`/vacunas/mascota/${MASCOTA_ID}`, { method: 'POST', body: JSON.stringify(data) });
+export const updateVacuna = (id: number, data: Omit<Vacuna, 'id' | 'mascota_id'>) =>
+  request(`/vacunas/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deleteVacuna = (id: number) => request(`/vacunas/${id}`, { method: 'DELETE' });
 
 // Desparasitaciones
