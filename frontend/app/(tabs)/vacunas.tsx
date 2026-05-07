@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator,
+  TextInput, Alert, ActivityIndicator, Modal, ScrollView,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { getVacunas, createVacuna, updateVacuna, deleteVacuna } from '../../src/services/api';
@@ -104,34 +104,34 @@ export default function VacunasScreen() {
 
   return (
     <View style={styles.container}>
-      {!showForm && (
-        <View style={styles.topRow}>
-          <TouchableOpacity style={styles.addBtn} onPress={openNew}>
-            <Text style={styles.addBtnText}>＋ Nueva Vacuna</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.sortBtn} onPress={() => setOrden(orden === 'desc' ? 'asc' : 'desc')}>
-            <Text style={styles.sortBtnText}>{orden === 'desc' ? '⬇️ Recientes' : '⬆️ Antiguas'}</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <View style={styles.topRow}>
+        <TouchableOpacity style={styles.addBtn} onPress={openNew}>
+          <Text style={styles.addBtnText}>＋ Nueva Vacuna</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.sortBtn} onPress={() => setOrden(orden === 'desc' ? 'asc' : 'desc')}>
+          <Text style={styles.sortBtnText}>{orden === 'desc' ? '⬇️ Recientes' : '⬆️ Antiguas'}</Text>
+        </TouchableOpacity>
+      </View>
 
-      {showForm && (
-        <View style={styles.form}>
-          <Text style={styles.formTitle}>{editingId ? '✏️ Editar Vacuna' : '＋ Nueva Vacuna'}</Text>
-          <DateField label="Fecha" value={form.fecha} onChange={(d) => setForm({ ...form, fecha: d })} />
-          <TextInput style={styles.input} placeholder="Producto" value={form.producto} onChangeText={(t) => setForm({ ...form, producto: t })} />
-          <TextInput style={styles.input} placeholder="Veterinario" value={form.veterinario} onChangeText={(t) => setForm({ ...form, veterinario: t })} />
-          <DateField label="Próxima" value={form.proxima} onChange={(d) => setForm({ ...form, proxima: d })} />
-          <View style={styles.formButtons}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={closeForm}>
-              <Text style={styles.cancelBtnText}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-              <Text style={styles.saveBtnText}>{editingId ? 'Actualizar' : 'Guardar'}</Text>
-            </TouchableOpacity>
+      <Modal visible={showForm} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{editingId ? '✏️ Editar Vacuna' : '＋ Nueva Vacuna'}</Text>
+              <TouchableOpacity onPress={closeForm}><Text style={styles.modalClose}>✕</Text></TouchableOpacity>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <DateField label="Fecha" value={form.fecha} onChange={(d) => setForm({ ...form, fecha: d })} />
+              <TextInput style={styles.modalInput} placeholder="Producto" value={form.producto} onChangeText={(t) => setForm({ ...form, producto: t })} />
+              <TextInput style={styles.modalInput} placeholder="Veterinario" value={form.veterinario} onChangeText={(t) => setForm({ ...form, veterinario: t })} />
+              <DateField label="Próxima" value={form.proxima} onChange={(d) => setForm({ ...form, proxima: d })} />
+              <TouchableOpacity style={styles.modalSaveBtn} onPress={handleSave}>
+                <Text style={styles.modalSaveBtnText}>{editingId ? 'Actualizar' : 'Guardar'}</Text>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
-      )}
+      </Modal>
 
       <FlatList
         data={vacunasOrdenadas}
@@ -170,14 +170,14 @@ const styles = StyleSheet.create({
   addBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   sortBtn: { backgroundColor: '#e0e0e0', padding: 12, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   sortBtnText: { fontWeight: 'bold', color: '#555', fontSize: 13 },
-  form: { backgroundColor: '#fff', padding: 15, borderRadius: 10, marginBottom: 10, elevation: 2 },
-  formTitle: { fontSize: 16, fontWeight: 'bold', color: '#0077b6', marginBottom: 10 },
-  input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 8, backgroundColor: '#fafafa' },
-  formButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
-  cancelBtn: { flex: 1, padding: 12, borderRadius: 8, alignItems: 'center', backgroundColor: '#e0e0e0', marginRight: 8 },
-  cancelBtnText: { fontWeight: 'bold', color: '#555' },
-  saveBtn: { flex: 1, backgroundColor: '#00b4d8', padding: 12, borderRadius: 8, alignItems: 'center' },
-  saveBtnText: { color: '#fff', fontWeight: 'bold' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { backgroundColor: '#fff', borderRadius: 16, padding: 20, width: '100%', maxHeight: '80%', elevation: 5 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#0077b6' },
+  modalClose: { fontSize: 24, color: '#999', padding: 4 },
+  modalInput: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 12, marginBottom: 10, backgroundColor: '#fafafa', fontSize: 15 },
+  modalSaveBtn: { backgroundColor: '#0077b6', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 8 },
+  modalSaveBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   card: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
     padding: 15, borderRadius: 10, marginBottom: 10, elevation: 2,

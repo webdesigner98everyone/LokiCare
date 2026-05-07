@@ -7,6 +7,7 @@ export interface Mascota {
   color: string;
   fecha_nacimiento: string;
   microchip: string;
+  foto_url: string | null;
   propietario_nombre: string;
   telefono: string;
   direccion: string;

@@ -1,20 +1,19 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, Image, ScrollView,
-  TextInput, TouchableOpacity, Alert, ActivityIndicator,
+  TextInput, TouchableOpacity, Alert, ActivityIndicator, Modal,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import { getMascota, updateMascota, updatePropietario, uploadFoto, getVacunas, getDesparasitaciones, getBanos, getPesos, getAllMascotas, setMascotaId, BASE_URL } from '../../src/services/api';
+import { getMascota, updateMascota, updatePropietario, uploadFoto, getVacunas, getDesparasitaciones, getBanos, getPesos, getAllMascotas, createMascotaCompleta, setMascotaId, BASE_URL } from '../../src/services/api';
 import { formatDate } from '../../src/utils/format';
 import DateField from '../../src/components/DateField';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useMascota } from '../../src/context/MascotaContext';
 import type { Mascota, Propietario } from '../../src/types';
 
-const DEFAULT_IMAGE = require('../../assets/images/loki.jpg');
 
 interface FieldProps {
   label: string;
@@ -34,13 +33,15 @@ function Field({ label, value, editable, onChange }: FieldProps) {
 
 export default function PerfilScreen() {
   const { theme, toggleTheme, c } = useTheme();
-  const { mascotaId, setMascotaId: setCtxMascotaId } = useMascota();
+  const { mascotaId, setMascotaId: setCtxMascotaId, setMascotaNombre } = useMascota();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [mascota, setMascota] = useState<Mascota>({} as Mascota);
   const [propietario, setPropietario] = useState<Propietario>({} as Propietario);
   const [fotoUri, setFotoUri] = useState<string | null>(null);
   const [mascotas, setMascotas] = useState<{ id: number; nombre: string; raza: string }[]>([]);
+  const [showNewMascota, setShowNewMascota] = useState(false);
+  const [newMascota, setNewMascota] = useState({ nombre: '', especie: '', raza: '', sexo: '', color: '', fecha_nacimiento: '', microchip: '' });
 
   useFocusEffect(
     useCallback(() => {
@@ -48,6 +49,7 @@ export default function PerfilScreen() {
       getMascota()
         .then((data) => {
           setMascota(data);
+          setMascotaNombre(data.nombre);
           setFotoUri(data.foto_url ? `${BASE_URL}${data.foto_url}` : null);
           setPropietario({
             nombre: data.propietario_nombre,
@@ -60,6 +62,19 @@ export default function PerfilScreen() {
         .finally(() => setLoading(false));
     }, [])
   );
+
+  const handleNewMascota = async () => {
+    if (!newMascota.nombre.trim() || !newMascota.especie.trim()) return Alert.alert('Campos requeridos', 'Nombre y especie son obligatorios');
+    try {
+      await createMascotaCompleta({ ...newMascota, propietario_id: 1 });
+      Alert.alert('✅ Mascota creada', `${newMascota.nombre} fue registrada`);
+      setNewMascota({ nombre: '', especie: '', raza: '', sexo: '', color: '', fecha_nacimiento: '', microchip: '' });
+      setShowNewMascota(false);
+      getAllMascotas().then(setMascotas).catch(() => {});
+    } catch {
+      Alert.alert('❌ Error', 'No se pudo crear la mascota');
+    }
+  };
 
   const pickImage = () => {
     Alert.alert('Cambiar foto', '¿De dónde quieres seleccionar la foto?', [
@@ -184,25 +199,56 @@ export default function PerfilScreen() {
         </TouchableOpacity>
       </View>
 
-      {mascotas.length > 1 && (
-        <View style={styles.mascotaSelector}>
-          <Text style={[styles.selectorLabel, { color: c.text }]}>Mascota activa:</Text>
-          <View style={styles.selectorRow}>
-            {mascotas.map((m) => (
-              <TouchableOpacity
-                key={m.id}
-                style={[styles.selectorBtn, mascotaId === m.id && styles.selectorBtnActive]}
-                onPress={() => { setMascotaId(m.id); setCtxMascotaId(m.id); setLoading(true); getMascota().then((data) => { setMascota(data); setFotoUri(data.foto_url ? `${BASE_URL}${data.foto_url}` : null); setPropietario({ nombre: data.propietario_nombre, telefono: data.telefono, direccion: data.direccion, email: data.email }); }).finally(() => setLoading(false)); }}
-              >
-                <Text style={[styles.selectorBtnText, mascotaId === m.id && styles.selectorBtnTextActive]}>{m.nombre}</Text>
+      <View style={styles.mascotaSelector}>
+        <Text style={[styles.selectorLabel, { color: c.text }]}>Mascota activa:</Text>
+        <View style={styles.selectorRow}>
+          {mascotas.map((m) => (
+            <TouchableOpacity
+              key={m.id}
+              style={[styles.selectorBtn, mascotaId === m.id && styles.selectorBtnActive]}
+              onPress={() => { setMascotaId(m.id); setCtxMascotaId(m.id); setLoading(true); getMascota().then((data) => { setMascota(data); setMascotaNombre(data.nombre); setFotoUri(data.foto_url ? `${BASE_URL}${data.foto_url}` : null); setPropietario({ nombre: data.propietario_nombre, telefono: data.telefono, direccion: data.direccion, email: data.email }); }).finally(() => setLoading(false)); }}
+            >
+              <Text style={[styles.selectorBtnText, mascotaId === m.id && styles.selectorBtnTextActive]}>{m.nombre}</Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity style={styles.selectorAddBtn} onPress={() => setShowNewMascota(true)}>
+            <Text style={styles.selectorAddBtnText}>＋</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <Modal visible={showNewMascota} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>🐾 Nueva Mascota</Text>
+              <TouchableOpacity onPress={() => setShowNewMascota(false)}>
+                <Text style={styles.modalClose}>✕</Text>
               </TouchableOpacity>
-            ))}
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <TextInput style={styles.modalInput} placeholder="Nombre *" value={newMascota.nombre} onChangeText={(t) => setNewMascota({ ...newMascota, nombre: t })} />
+              <TextInput style={styles.modalInput} placeholder="Especie * (ej: Canino, Felino)" value={newMascota.especie} onChangeText={(t) => setNewMascota({ ...newMascota, especie: t })} />
+              <TextInput style={styles.modalInput} placeholder="Raza" value={newMascota.raza} onChangeText={(t) => setNewMascota({ ...newMascota, raza: t })} />
+              <TextInput style={styles.modalInput} placeholder="Sexo (Macho/Hembra)" value={newMascota.sexo} onChangeText={(t) => setNewMascota({ ...newMascota, sexo: t })} />
+              <TextInput style={styles.modalInput} placeholder="Color" value={newMascota.color} onChangeText={(t) => setNewMascota({ ...newMascota, color: t })} />
+              <DateField label="Fecha de Nacimiento" value={newMascota.fecha_nacimiento} onChange={(d) => setNewMascota({ ...newMascota, fecha_nacimiento: d })} />
+              <TouchableOpacity style={styles.modalSaveBtn} onPress={handleNewMascota}>
+                <Text style={styles.modalSaveBtnText}>Registrar Mascota</Text>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
-      )}
+      </Modal>
 
       <TouchableOpacity onPress={pickImage}>
-        <Image source={fotoUri ? { uri: fotoUri } : DEFAULT_IMAGE} style={styles.image} />
+        {fotoUri ? (
+          <Image source={{ uri: fotoUri }} style={styles.image} />
+        ) : (
+          <View style={styles.placeholderImage}>
+            <Text style={styles.placeholderText}>🐾</Text>
+          </View>
+        )}
         <View style={styles.cameraIcon}>
           <Text style={styles.cameraText}>📷</Text>
         </View>
@@ -258,8 +304,20 @@ const styles = StyleSheet.create({
   selectorBtnActive: { backgroundColor: '#0077b6' },
   selectorBtnText: { fontWeight: '600', color: '#555' },
   selectorBtnTextActive: { color: '#fff' },
+  selectorAddBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#2a9d8f', justifyContent: 'center', alignItems: 'center' },
+  selectorAddBtnText: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { backgroundColor: '#fff', borderRadius: 16, padding: 20, width: '100%', maxHeight: '80%', elevation: 5 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#0077b6' },
+  modalClose: { fontSize: 24, color: '#999', padding: 4 },
+  modalInput: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 12, marginBottom: 10, backgroundColor: '#fafafa', fontSize: 15 },
+  modalSaveBtn: { backgroundColor: '#0077b6', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 8 },
+  modalSaveBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   image: { width: 160, height: 160, borderRadius: 80, marginBottom: 20 },
+  placeholderImage: { width: 160, height: 160, borderRadius: 80, marginBottom: 20, backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center' },
+  placeholderText: { fontSize: 50 },
   cameraIcon: {
     position: 'absolute', bottom: 20, right: 0,
     backgroundColor: '#0077b6', borderRadius: 20, width: 40, height: 40,

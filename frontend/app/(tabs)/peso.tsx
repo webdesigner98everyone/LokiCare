@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator,
+  TextInput, Alert, ActivityIndicator, Modal, ScrollView,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { getPesos, createPeso, updatePeso, deletePeso } from '../../src/services/api';
@@ -80,28 +80,28 @@ export default function PesoScreen() {
 
   return (
     <View style={styles.container}>
-      {!showForm && (
-        <TouchableOpacity style={styles.addBtn} onPress={openNew}>
-          <Text style={styles.addBtnText}>＋ Registrar Peso</Text>
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity style={styles.addBtn} onPress={openNew}>
+        <Text style={styles.addBtnText}>＋ Registrar Peso</Text>
+      </TouchableOpacity>
 
-      {showForm && (
-        <View style={styles.form}>
-          <Text style={styles.formTitle}>{editingId ? '✏️ Editar Peso' : '＋ Nuevo Registro'}</Text>
-          <DateField label="Fecha" value={form.fecha} onChange={(d) => setForm({ ...form, fecha: d })} />
-          <TextInput style={styles.input} placeholder="Peso (kg)" value={form.peso} onChangeText={(t) => setForm({ ...form, peso: t })} keyboardType="decimal-pad" />
-          <TextInput style={styles.input} placeholder="Notas (opcional)" value={form.notas} onChangeText={(t) => setForm({ ...form, notas: t })} />
-          <View style={styles.formButtons}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={closeForm}>
-              <Text style={styles.cancelBtnText}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-              <Text style={styles.saveBtnText}>{editingId ? 'Actualizar' : 'Guardar'}</Text>
-            </TouchableOpacity>
+      <Modal visible={showForm} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{editingId ? '✏️ Editar Peso' : '＋ Nuevo Registro'}</Text>
+              <TouchableOpacity onPress={closeForm}><Text style={styles.modalClose}>✕</Text></TouchableOpacity>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <DateField label="Fecha" value={form.fecha} onChange={(d) => setForm({ ...form, fecha: d })} />
+              <TextInput style={styles.modalInput} placeholder="Peso (kg)" value={form.peso} onChangeText={(t) => setForm({ ...form, peso: t })} keyboardType="decimal-pad" />
+              <TextInput style={styles.modalInput} placeholder="Notas (opcional)" value={form.notas} onChangeText={(t) => setForm({ ...form, notas: t })} />
+              <TouchableOpacity style={styles.modalSaveBtn} onPress={handleSave}>
+                <Text style={styles.modalSaveBtnText}>{editingId ? 'Actualizar' : 'Guardar'}</Text>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
-      )}
+      </Modal>
 
       <FlatList
         data={pesos}
@@ -132,14 +132,14 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   addBtn: { backgroundColor: '#0077b6', padding: 12, borderRadius: 10, alignItems: 'center', marginBottom: 10 },
   addBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  form: { backgroundColor: '#fff', padding: 15, borderRadius: 10, marginBottom: 10, elevation: 2 },
-  formTitle: { fontSize: 16, fontWeight: 'bold', color: '#0077b6', marginBottom: 10 },
-  input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 8, backgroundColor: '#fafafa' },
-  formButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
-  cancelBtn: { flex: 1, padding: 12, borderRadius: 8, alignItems: 'center', backgroundColor: '#e0e0e0', marginRight: 8 },
-  cancelBtnText: { fontWeight: 'bold', color: '#555' },
-  saveBtn: { flex: 1, backgroundColor: '#00b4d8', padding: 12, borderRadius: 8, alignItems: 'center' },
-  saveBtnText: { color: '#fff', fontWeight: 'bold' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { backgroundColor: '#fff', borderRadius: 16, padding: 20, width: '100%', maxHeight: '80%', elevation: 5 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#0077b6' },
+  modalClose: { fontSize: 24, color: '#999', padding: 4 },
+  modalInput: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 12, marginBottom: 10, backgroundColor: '#fafafa', fontSize: 15 },
+  modalSaveBtn: { backgroundColor: '#0077b6', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 8 },
+  modalSaveBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   card: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
     padding: 15, borderRadius: 10, marginBottom: 10, elevation: 2,

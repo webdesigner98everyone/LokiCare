@@ -1,10 +1,15 @@
-import { Stack, Redirect } from 'expo-router';
-import { View, Text, Platform, StatusBar } from 'react-native';
+import { Redirect, Stack } from 'expo-router';
+import { Platform, StatusBar, Text, View } from 'react-native';
+import { MascotaProvider, useMascota } from '../src/context/MascotaContext';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
-import { MascotaProvider } from '../src/context/MascotaContext';
 
 function AppLayout() {
   const { c } = useTheme();
+  const { mascotaNombre } = useMascota();
+
+  const titulo = mascotaNombre
+    ? `Ficha Médica de ${mascotaNombre} 🐶 🐱`
+    : 'LokiCare 🐶';
 
   return (
     <>
@@ -22,7 +27,7 @@ function AppLayout() {
               }}
             >
               <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>
-                Ficha Médica de Loki 🐶
+                {titulo}
               </Text>
             </View>
           ),

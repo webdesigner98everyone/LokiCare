@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, RefreshCo
 import { useFocusEffect } from 'expo-router';
 import { getResumen, BASE_URL } from '../../src/services/api';
 import { formatDate } from '../../src/utils/format';
+import { useMascota } from '../../src/context/MascotaContext';
 import type { Resumen } from '../../src/types';
 
 function calcularEdad(fechaNacimiento: string): string {
@@ -26,6 +27,7 @@ function diasRestantes(fecha: string | null): number | null {
 }
 
 export default function HomeScreen() {
+  const { setMascotaNombre } = useMascota();
   const [data, setData] = useState<Resumen | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +35,10 @@ export default function HomeScreen() {
 
   const loadData = () => {
     getResumen()
-      .then(setData)
+      .then((res) => {
+        setData(res);
+        setMascotaNombre(res.mascota.nombre);
+      })
       .catch((e: Error) => setError(e.message));
   };
 
@@ -52,11 +57,17 @@ export default function HomeScreen() {
 
   const fotoSource = mascota.foto_url
     ? { uri: `${BASE_URL}${mascota.foto_url}` }
-    : require('../../assets/images/loki.jpg');
+    : null;
 
   return (
     <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0077b6']} />}>
-      <Image source={fotoSource} style={styles.image} />
+      {fotoSource ? (
+        <Image source={fotoSource} style={styles.image} />
+      ) : (
+        <View style={styles.placeholderImage}>
+          <Text style={styles.placeholderText}>🐾</Text>
+        </View>
+      )}
       <Text style={styles.title}>Ficha Médica de {mascota.nombre}</Text>
       <Text style={styles.subtitle}>{mascota.raza} • {mascota.especie}</Text>
       {mascota.fecha_nacimiento && (
@@ -116,6 +127,8 @@ const styles = StyleSheet.create({
   container: { alignItems: 'center', padding: 20, backgroundColor: '#f8f9fa' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   image: { width: 180, height: 180, borderRadius: 90, marginBottom: 20 },
+  placeholderImage: { width: 180, height: 180, borderRadius: 90, marginBottom: 20, backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center' },
+  placeholderText: { fontSize: 60 },
   title: { fontSize: 24, fontWeight: 'bold', color: '#1c1c1c', textAlign: 'center' },
   subtitle: { fontSize: 18, color: '#666', marginBottom: 4 },
   age: { fontSize: 16, color: '#0077b6', fontWeight: '600', marginBottom: 10 },
