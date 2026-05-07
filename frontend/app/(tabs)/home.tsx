@@ -44,7 +44,9 @@ export default function HomeScreen() {
       .catch((e: Error) => setError(e.message));
   };
 
-  useFocusEffect(useCallback(() => { loadData(); }, []));
+  useFocusEffect(useCallback(() => {
+    loadData();
+  }, []));
 
   const onRefresh = async () => {
     setRefreshing(true);
