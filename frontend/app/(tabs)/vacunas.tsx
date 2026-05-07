@@ -9,6 +9,7 @@ import DateField from '../../src/components/DateField';
 import { formatDate } from '../../src/utils/format';
 import { isValidDate, isNotEmpty } from '../../src/utils/validation';
 import { useTheme } from '../../src/context/ThemeContext';
+import AnimatedCard from '../../src/components/AnimatedCard';
 import type { Vacuna } from '../../src/types';
 
 type VacunaForm = { fecha: string; producto: string; veterinario: string; proxima: string };
@@ -24,6 +25,7 @@ export default function VacunasScreen() {
   const [form, setForm] = useState<VacunaForm>(EMPTY_FORM);
   const [refreshing, setRefreshing] = useState(false);
   const [orden, setOrden] = useState<Orden>('desc');
+  const [busqueda, setBusqueda] = useState('');
 
   const load = () => {
     setLoading(true);
@@ -96,11 +98,13 @@ export default function VacunasScreen() {
     ]);
   };
 
-  const vacunasOrdenadas = [...vacunas].sort((a, b) => {
-    const dateA = new Date(a.fecha).getTime();
-    const dateB = new Date(b.fecha).getTime();
-    return orden === 'desc' ? dateB - dateA : dateA - dateB;
-  });
+  const vacunasOrdenadas = [...vacunas]
+    .filter(v => !busqueda || v.producto.toLowerCase().includes(busqueda.toLowerCase()) || (v.veterinario || '').toLowerCase().includes(busqueda.toLowerCase()))
+    .sort((a, b) => {
+      const dateA = new Date(a.fecha).getTime();
+      const dateB = new Date(b.fecha).getTime();
+      return orden === 'desc' ? dateB - dateA : dateA - dateB;
+    });
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#0077b6" /></View>;
 
@@ -114,6 +118,14 @@ export default function VacunasScreen() {
           <Text style={styles.sortBtnText}>{orden === 'desc' ? '⬇️ Recientes' : '⬆️ Antiguas'}</Text>
         </TouchableOpacity>
       </View>
+
+      <TextInput
+        style={[styles.searchInput, { backgroundColor: c.card, color: c.text }]}
+        placeholder="🔍 Buscar por producto o veterinario..."
+        placeholderTextColor={c.textSecondary}
+        value={busqueda}
+        onChangeText={setBusqueda}
+      />
 
       <Modal visible={showForm} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
@@ -140,8 +152,8 @@ export default function VacunasScreen() {
         keyExtractor={(item) => item.id.toString()}
         refreshing={refreshing}
         onRefresh={onRefresh}
-        renderItem={({ item }) => (
-          <View style={[styles.card, { backgroundColor: c.card }]}>
+        renderItem={({ item, index }) => (
+          <AnimatedCard index={index} style={[styles.card, { backgroundColor: c.card }]}>
             <TouchableOpacity style={{ flex: 1 }} onPress={() => openEdit(item)}>
               <Text style={[styles.cardTitle, { color: c.primary }]}>{item.producto}</Text>
               <Text style={[styles.cardText, { color: c.textSecondary }]}>📅 {formatDate(item.fecha)}</Text>
@@ -156,7 +168,7 @@ export default function VacunasScreen() {
                 <Text style={styles.deleteBtn}>🗑️</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </AnimatedCard>
         )}
         ListEmptyComponent={<Text style={styles.empty}>No hay vacunas registradas</Text>}
       />
@@ -172,6 +184,7 @@ const styles = StyleSheet.create({
   addBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   sortBtn: { backgroundColor: '#e0e0e0', padding: 12, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   sortBtnText: { fontWeight: 'bold', color: '#555', fontSize: 13 },
+  searchInput: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 10, marginBottom: 10, fontSize: 14 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalContent: { backgroundColor: '#fff', borderRadius: 16, padding: 20, width: '100%', maxHeight: '80%', elevation: 5 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },

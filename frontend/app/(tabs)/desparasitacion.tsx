@@ -26,6 +26,7 @@ export default function DesparasitacionScreen() {
   const [form, setForm] = useState<DesparasitacionForm>(EMPTY_FORM);
   const [refreshing, setRefreshing] = useState(false);
   const [orden, setOrden] = useState<Orden>('desc');
+  const [busqueda, setBusqueda] = useState('');
 
   const load = (t?: Tipo) => {
     setLoading(true);
@@ -99,11 +100,13 @@ export default function DesparasitacionScreen() {
     ]);
   };
 
-  const itemsOrdenados = [...items].sort((a, b) => {
-    const dateA = new Date(a.fecha).getTime();
-    const dateB = new Date(b.fecha).getTime();
-    return orden === 'desc' ? dateB - dateA : dateA - dateB;
-  });
+  const itemsOrdenados = [...items]
+    .filter(d => !busqueda || d.producto.toLowerCase().includes(busqueda.toLowerCase()))
+    .sort((a, b) => {
+      const dateA = new Date(a.fecha).getTime();
+      const dateB = new Date(b.fecha).getTime();
+      return orden === 'desc' ? dateB - dateA : dateA - dateB;
+    });
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
@@ -126,6 +129,14 @@ export default function DesparasitacionScreen() {
           </TouchableOpacity>
         </View>
       )}
+
+      <TextInput
+        style={[styles.searchInput, { backgroundColor: c.card, color: c.text }]}
+        placeholder="🔍 Buscar por producto..."
+        placeholderTextColor={c.textSecondary}
+        value={busqueda}
+        onChangeText={setBusqueda}
+      />
 
       <Modal visible={showForm} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
@@ -190,6 +201,7 @@ const styles = StyleSheet.create({
   addBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   sortBtn: { backgroundColor: '#e0e0e0', padding: 12, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   sortBtnText: { fontWeight: 'bold', color: '#555', fontSize: 13 },
+  searchInput: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 10, marginBottom: 10, fontSize: 14 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalContent: { backgroundColor: '#fff', borderRadius: 16, padding: 20, width: '100%', maxHeight: '80%', elevation: 5 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },

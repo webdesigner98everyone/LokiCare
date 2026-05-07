@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator, Modal, ScrollView,
+  TextInput, Alert, ActivityIndicator, Modal, ScrollView, Dimensions,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
+import { LineChart } from 'react-native-chart-kit';
 import { getPesos, createPeso, updatePeso, deletePeso } from '../../src/services/api';
 import DateField from '../../src/components/DateField';
 import { formatDate } from '../../src/utils/format';
@@ -82,6 +83,32 @@ export default function PesoScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
+      {pesos.length >= 2 && (
+        <View style={[styles.chartContainer, { backgroundColor: c.card }]}>
+          <Text style={[styles.chartTitle, { color: c.primary }]}>📈 Evolución del Peso</Text>
+          <LineChart
+            data={{
+              labels: [...pesos].reverse().slice(-7).map(p => formatDate(p.fecha).slice(5)),
+              datasets: [{ data: [...pesos].reverse().slice(-7).map(p => Number(p.peso)) }],
+            }}
+            width={Dimensions.get('window').width - 60}
+            height={180}
+            yAxisSuffix=" kg"
+            chartConfig={{
+              backgroundColor: c.card,
+              backgroundGradientFrom: c.card,
+              backgroundGradientTo: c.card,
+              decimalCount: 1,
+              color: () => c.primary,
+              labelColor: () => c.textSecondary,
+              propsForDots: { r: '5', strokeWidth: '2', stroke: c.primary },
+            }}
+            bezier
+            style={{ borderRadius: 10 }}
+          />
+        </View>
+      )}
+
       <TouchableOpacity style={styles.addBtn} onPress={openNew}>
         <Text style={styles.addBtnText}>＋ Registrar Peso</Text>
       </TouchableOpacity>
@@ -134,6 +161,8 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   addBtn: { backgroundColor: '#0077b6', padding: 12, borderRadius: 10, alignItems: 'center', marginBottom: 10 },
   addBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  chartContainer: { padding: 15, borderRadius: 12, marginBottom: 15, elevation: 2, alignItems: 'center' },
+  chartTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalContent: { backgroundColor: '#fff', borderRadius: 16, padding: 20, width: '100%', maxHeight: '80%', elevation: 5 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
