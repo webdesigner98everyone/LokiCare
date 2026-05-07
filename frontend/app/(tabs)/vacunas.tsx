@@ -12,6 +12,7 @@ import type { Vacuna } from '../../src/types';
 
 type VacunaForm = { fecha: string; producto: string; veterinario: string; proxima: string };
 const EMPTY_FORM: VacunaForm = { fecha: '', producto: '', veterinario: '', proxima: '' };
+type Orden = 'desc' | 'asc';
 
 export default function VacunasScreen() {
   const [vacunas, setVacunas] = useState<Vacuna[]>([]);
@@ -20,6 +21,7 @@ export default function VacunasScreen() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<VacunaForm>(EMPTY_FORM);
   const [refreshing, setRefreshing] = useState(false);
+  const [orden, setOrden] = useState<Orden>('desc');
 
   const load = () => {
     setLoading(true);
@@ -92,14 +94,25 @@ export default function VacunasScreen() {
     ]);
   };
 
+  const vacunasOrdenadas = [...vacunas].sort((a, b) => {
+    const dateA = new Date(a.fecha).getTime();
+    const dateB = new Date(b.fecha).getTime();
+    return orden === 'desc' ? dateB - dateA : dateA - dateB;
+  });
+
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#0077b6" /></View>;
 
   return (
     <View style={styles.container}>
       {!showForm && (
-        <TouchableOpacity style={styles.addBtn} onPress={openNew}>
-          <Text style={styles.addBtnText}>＋ Nueva Vacuna</Text>
-        </TouchableOpacity>
+        <View style={styles.topRow}>
+          <TouchableOpacity style={styles.addBtn} onPress={openNew}>
+            <Text style={styles.addBtnText}>＋ Nueva Vacuna</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.sortBtn} onPress={() => setOrden(orden === 'desc' ? 'asc' : 'desc')}>
+            <Text style={styles.sortBtnText}>{orden === 'desc' ? '⬇️ Recientes' : '⬆️ Antiguas'}</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       {showForm && (
@@ -121,7 +134,7 @@ export default function VacunasScreen() {
       )}
 
       <FlatList
-        data={vacunas}
+        data={vacunasOrdenadas}
         keyExtractor={(item) => item.id.toString()}
         refreshing={refreshing}
         onRefresh={onRefresh}
@@ -152,8 +165,11 @@ export default function VacunasScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f9fa', padding: 15 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  addBtn: { backgroundColor: '#0077b6', padding: 12, borderRadius: 10, alignItems: 'center', marginBottom: 10 },
+  topRow: { flexDirection: 'row', marginBottom: 10, gap: 8 },
+  addBtn: { flex: 1, backgroundColor: '#0077b6', padding: 12, borderRadius: 10, alignItems: 'center' },
   addBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  sortBtn: { backgroundColor: '#e0e0e0', padding: 12, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  sortBtnText: { fontWeight: 'bold', color: '#555', fontSize: 13 },
   form: { backgroundColor: '#fff', padding: 15, borderRadius: 10, marginBottom: 10, elevation: 2 },
   formTitle: { fontSize: 16, fontWeight: 'bold', color: '#0077b6', marginBottom: 10 },
   input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 8, backgroundColor: '#fafafa' },

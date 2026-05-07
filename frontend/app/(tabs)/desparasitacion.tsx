@@ -13,6 +13,7 @@ import type { Desparasitacion } from '../../src/types';
 type DesparasitacionForm = { fecha: string; producto: string; proxima: string };
 type Tipo = 'interna' | 'externa';
 const EMPTY_FORM: DesparasitacionForm = { fecha: '', producto: '', proxima: '' };
+type Orden = 'desc' | 'asc';
 
 export default function DesparasitacionScreen() {
   const [tipo, setTipo] = useState<Tipo>('interna');
@@ -22,6 +23,7 @@ export default function DesparasitacionScreen() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<DesparasitacionForm>(EMPTY_FORM);
   const [refreshing, setRefreshing] = useState(false);
+  const [orden, setOrden] = useState<Orden>('desc');
 
   const load = (t?: Tipo) => {
     setLoading(true);
@@ -95,6 +97,12 @@ export default function DesparasitacionScreen() {
     ]);
   };
 
+  const itemsOrdenados = [...items].sort((a, b) => {
+    const dateA = new Date(a.fecha).getTime();
+    const dateB = new Date(b.fecha).getTime();
+    return orden === 'desc' ? dateB - dateA : dateA - dateB;
+  });
+
   return (
     <View style={styles.container}>
       <View style={styles.tabs}>
@@ -107,9 +115,14 @@ export default function DesparasitacionScreen() {
       </View>
 
       {!showForm && (
-        <TouchableOpacity style={styles.addBtn} onPress={openNew}>
-          <Text style={styles.addBtnText}>＋ Nueva Desparasitación</Text>
-        </TouchableOpacity>
+        <View style={styles.topRow}>
+          <TouchableOpacity style={styles.addBtn} onPress={openNew}>
+            <Text style={styles.addBtnText}>＋ Nueva Desparasitación</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.sortBtn} onPress={() => setOrden(orden === 'desc' ? 'asc' : 'desc')}>
+            <Text style={styles.sortBtnText}>{orden === 'desc' ? '⬇️ Recientes' : '⬆️ Antiguas'}</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       {showForm && (
@@ -133,7 +146,7 @@ export default function DesparasitacionScreen() {
         <ActivityIndicator size="large" color="#0077b6" style={{ marginTop: 30 }} />
       ) : (
         <FlatList
-          data={items}
+          data={itemsOrdenados}
           keyExtractor={(item) => item.id.toString()}
           refreshing={refreshing}
           onRefresh={onRefresh}
@@ -168,8 +181,11 @@ const styles = StyleSheet.create({
   tabActive: { backgroundColor: '#0077b6' },
   tabText: { fontWeight: 'bold', color: '#555' },
   tabTextActive: { color: '#fff' },
-  addBtn: { backgroundColor: '#0077b6', padding: 12, borderRadius: 10, alignItems: 'center', marginBottom: 10 },
+  topRow: { flexDirection: 'row', marginBottom: 10, gap: 8 },
+  addBtn: { flex: 1, backgroundColor: '#0077b6', padding: 12, borderRadius: 10, alignItems: 'center' },
   addBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  sortBtn: { backgroundColor: '#e0e0e0', padding: 12, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  sortBtnText: { fontWeight: 'bold', color: '#555', fontSize: 13 },
   form: { backgroundColor: '#fff', padding: 15, borderRadius: 10, marginBottom: 10, elevation: 2 },
   formTitle: { fontSize: 16, fontWeight: 'bold', color: '#0077b6', marginBottom: 10 },
   input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, marginBottom: 8, backgroundColor: '#fafafa' },
