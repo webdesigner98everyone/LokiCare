@@ -1,16 +1,19 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../src/context/ThemeContext';
 
 export default function TabLayout() {
+  const { c } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: '#999',
+        tabBarActiveTintColor: c.primary,
+        tabBarInactiveTintColor: c.textSecondary,
         tabBarStyle: {
-          backgroundColor: '#fff',
-          borderTopColor: '#eee',
+          backgroundColor: c.tabBar,
+          borderTopColor: c.tabBarBorder,
           height: 60,
           paddingBottom: 8,
         },
@@ -32,6 +35,10 @@ export default function TabLayout() {
       <Tabs.Screen name="desparasitacion" options={{
         title: 'Desparasitación',
         tabBarIcon: ({ color, size }) => <Ionicons name="bug" color={color} size={size} />,
+      }} />
+      <Tabs.Screen name="peso" options={{
+        title: 'Peso',
+        tabBarIcon: ({ color, size }) => <Ionicons name="fitness" color={color} size={size} />,
       }} />
       <Tabs.Screen name="perfil" options={{
         title: 'Perfil',

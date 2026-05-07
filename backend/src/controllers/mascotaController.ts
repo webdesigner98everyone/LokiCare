@@ -14,6 +14,30 @@ const storage = multer.diskStorage({
 
 export const upload = multer({ storage });
 
+export const getAllMascotas = async (_req: Request, res: Response) => {
+  try {
+    const [rows] = await db.query<RowDataPacket[]>(
+      'SELECT id, nombre, raza, foto_url FROM mascotas ORDER BY nombre'
+    );
+    res.json(rows);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const createMascotaCompleta = async (req: Request, res: Response) => {
+  const { nombre, especie, raza, sexo, color, fecha_nacimiento, microchip, propietario_id } = req.body;
+  try {
+    const [result] = await db.query<ResultSetHeader>(
+      'INSERT INTO mascotas (propietario_id, nombre, especie, raza, sexo, color, fecha_nacimiento, microchip) VALUES (?,?,?,?,?,?,?,?)',
+      [propietario_id || 1, nombre, especie, raza, sexo, color, fecha_nacimiento, microchip]
+    );
+    res.status(201).json({ id: result.insertId, message: 'Mascota creada' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 export const getMascota = async (req: Request, res: Response) => {
   try {
     const [rows] = await db.query<RowDataPacket[]>(

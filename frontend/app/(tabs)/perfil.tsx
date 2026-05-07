@@ -5,9 +5,13 @@ import {
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { getMascota, updateMascota, updatePropietario, uploadFoto, BASE_URL } from '../../src/services/api';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+import { getMascota, updateMascota, updatePropietario, uploadFoto, getVacunas, getDesparasitaciones, getBanos, getPesos, getAllMascotas, setMascotaId, BASE_URL } from '../../src/services/api';
 import { formatDate } from '../../src/utils/format';
 import DateField from '../../src/components/DateField';
+import { useTheme } from '../../src/context/ThemeContext';
+import { useMascota } from '../../src/context/MascotaContext';
 import type { Mascota, Propietario } from '../../src/types';
 
 const DEFAULT_IMAGE = require('../../assets/images/loki.jpg');
@@ -29,14 +33,18 @@ function Field({ label, value, editable, onChange }: FieldProps) {
 }
 
 export default function PerfilScreen() {
+  const { theme, toggleTheme, c } = useTheme();
+  const { mascotaId, setMascotaId: setCtxMascotaId } = useMascota();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [mascota, setMascota] = useState<Mascota>({} as Mascota);
   const [propietario, setPropietario] = useState<Propietario>({} as Propietario);
   const [fotoUri, setFotoUri] = useState<string | null>(null);
+  const [mascotas, setMascotas] = useState<{ id: number; nombre: string; raza: string }[]>([]);
 
   useFocusEffect(
     useCallback(() => {
+      getAllMascotas().then(setMascotas).catch(() => {});
       getMascota()
         .then((data) => {
           setMascota(data);
@@ -101,10 +109,98 @@ export default function PerfilScreen() {
     }
   };
 
+  const exportPDF = async () => {
+    try {
+      const [vacunas, internas, externas, banos, pesos] = await Promise.all([
+        getVacunas(), getDesparasitaciones('interna'), getDesparasitaciones('externa'), getBanos(), getPesos(),
+      ]);
+
+      const html = `
+        <html><head><style>
+          body { font-family: Arial; padding: 20px; }
+          h1 { color: #0077b6; }
+          .section { page-break-inside: avoid; margin-top: 20px; }
+          .section h2 { color: #333; margin-bottom: 8px; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border: 1px solid #ddd; padding: 6px; text-align: left; font-size: 12px; }
+          th { background: #0077b6; color: #fff; }
+        </style></head><body>
+          <h1>🐶 Historial Médico - ${mascota.nombre}</h1>
+          <p><b>Raza:</b> ${mascota.raza} | <b>Especie:</b> ${mascota.especie} | <b>Nacimiento:</b> ${formatDate(mascota.fecha_nacimiento)}</p>
+          <p><b>Propietario:</b> ${propietario.nombre} | <b>Tel:</b> ${propietario.telefono}</p>
+
+          <div class="section">
+            <h2>💉 Vacunas</h2>
+            <table><tr><th>Fecha</th><th>Producto</th><th>Veterinario</th><th>Próxima</th></tr>
+            ${vacunas.map(v => `<tr><td>${formatDate(v.fecha)}</td><td>${v.producto}</td><td>${v.veterinario || 'N/A'}</td><td>${formatDate(v.proxima)}</td></tr>`).join('')}
+            </table>
+          </div>
+
+          <div class="section">
+            <h2>💊 Desparasitación Interna</h2>
+            <table><tr><th>Fecha</th><th>Producto</th><th>Próxima</th></tr>
+            ${internas.map(d => `<tr><td>${formatDate(d.fecha)}</td><td>${d.producto}</td><td>${formatDate(d.proxima)}</td></tr>`).join('')}
+            </table>
+          </div>
+
+          <div class="section">
+            <h2>🪲 Desparasitación Externa</h2>
+            <table><tr><th>Fecha</th><th>Producto</th><th>Próxima</th></tr>
+            ${externas.map(d => `<tr><td>${formatDate(d.fecha)}</td><td>${d.producto}</td><td>${formatDate(d.proxima)}</td></tr>`).join('')}
+            </table>
+          </div>
+
+          <div class="section">
+            <h2>🧼 Baños</h2>
+            <table><tr><th>Fecha</th><th>Hora</th><th>Observaciones</th></tr>
+            ${banos.map(b => `<tr><td>${formatDate(b.fecha)}</td><td>${b.hora || '-'}</td><td>${b.observaciones || '-'}</td></tr>`).join('')}
+            </table>
+          </div>
+
+          <div class="section">
+            <h2>⚖️ Historial de Peso</h2>
+            <table><tr><th>Fecha</th><th>Peso (kg)</th><th>Notas</th></tr>
+            ${pesos.map(p => `<tr><td>${formatDate(p.fecha)}</td><td>${p.peso}</td><td>${p.notas || '-'}</td></tr>`).join('')}
+            </table>
+          </div>
+        </body></html>
+      `;
+
+      const { uri } = await Print.printToFileAsync({ html });
+      await Sharing.shareAsync(uri);
+    } catch {
+      Alert.alert('❌ Error', 'No se pudo generar el PDF');
+    }
+  };
+
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#0077b6" /></View>;
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: c.background }]}>
+      <View style={styles.themeToggle}>
+        <TouchableOpacity onPress={toggleTheme} style={[styles.themeBtn, { backgroundColor: c.card }]}> 
+          <Text style={{ fontSize: 20 }}>{theme === 'light' ? '🌙' : '☀️'}</Text>
+          <Text style={[styles.themeBtnText, { color: c.text }]}>{theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {mascotas.length > 1 && (
+        <View style={styles.mascotaSelector}>
+          <Text style={[styles.selectorLabel, { color: c.text }]}>Mascota activa:</Text>
+          <View style={styles.selectorRow}>
+            {mascotas.map((m) => (
+              <TouchableOpacity
+                key={m.id}
+                style={[styles.selectorBtn, mascotaId === m.id && styles.selectorBtnActive]}
+                onPress={() => { setMascotaId(m.id); setCtxMascotaId(m.id); setLoading(true); getMascota().then((data) => { setMascota(data); setFotoUri(data.foto_url ? `${BASE_URL}${data.foto_url}` : null); setPropietario({ nombre: data.propietario_nombre, telefono: data.telefono, direccion: data.direccion, email: data.email }); }).finally(() => setLoading(false)); }}
+              >
+                <Text style={[styles.selectorBtnText, mascotaId === m.id && styles.selectorBtnTextActive]}>{m.nombre}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
+
       <TouchableOpacity onPress={pickImage}>
         <Image source={fotoUri ? { uri: fotoUri } : DEFAULT_IMAGE} style={styles.image} />
         <View style={styles.cameraIcon}>
@@ -142,12 +238,26 @@ export default function PerfilScreen() {
       >
         <Text style={styles.buttonText}>{isEditing ? 'Guardar Cambios' : 'Editar Información'}</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.button, { backgroundColor: '#2a9d8f' }]} onPress={exportPDF}>
+        <Text style={styles.buttonText}>📄 Exportar Historial PDF</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', paddingVertical: 30, backgroundColor: '#f9f9f9' },
+  container: { alignItems: 'center', paddingVertical: 30 },
+  themeToggle: { width: '90%', alignItems: 'flex-end', marginBottom: 10 },
+  themeBtn: { flexDirection: 'row', alignItems: 'center', padding: 10, borderRadius: 8, elevation: 2, gap: 6 },
+  themeBtnText: { fontWeight: '600', fontSize: 13 },
+  mascotaSelector: { width: '90%', marginBottom: 15 },
+  selectorLabel: { fontWeight: '600', marginBottom: 6 },
+  selectorRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  selectorBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#e0e0e0' },
+  selectorBtnActive: { backgroundColor: '#0077b6' },
+  selectorBtnText: { fontWeight: '600', color: '#555' },
+  selectorBtnTextActive: { color: '#fff' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   image: { width: 160, height: 160, borderRadius: 80, marginBottom: 20 },
   cameraIcon: {

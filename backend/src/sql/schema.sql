@@ -100,3 +100,14 @@ INSERT INTO desparasitaciones (mascota_id, tipo, fecha, producto, proxima) VALUE
 
 INSERT INTO banos (mascota_id, fecha, hora, observaciones) VALUES
 (1, '2025-10-01', '11:00 AM', 'Cita para Baño y Grooming.');
+
+-- Pesos
+CREATE TABLE pesos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  mascota_id INT NOT NULL,
+  fecha DATE NOT NULL,
+  peso DECIMAL(5,2) NOT NULL,
+  notas VARCHAR(200),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (mascota_id) REFERENCES mascotas(id)
+);

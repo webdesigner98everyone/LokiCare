@@ -7,6 +7,7 @@ import mascotaRoutes from './routes/mascota';
 import vacunasRoutes from './routes/vacunas';
 import desparasitacionesRoutes from './routes/desparasitaciones';
 import banosRoutes from './routes/banos';
+import pesosRoutes from './routes/pesos';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use('/api/mascota', mascotaRoutes);
 app.use('/api/vacunas', vacunasRoutes);
 app.use('/api/desparasitaciones', desparasitacionesRoutes);
 app.use('/api/banos', banosRoutes);
+app.use('/api/pesos', pesosRoutes);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 

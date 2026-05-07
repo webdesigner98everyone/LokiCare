@@ -1,7 +1,11 @@
 import { Stack, Redirect } from 'expo-router';
 import { View, Text, Platform, StatusBar } from 'react-native';
+import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
+import { MascotaProvider } from '../src/context/MascotaContext';
 
-export default function Layout() {
+function AppLayout() {
+  const { c } = useTheme();
+
   return (
     <>
       <Redirect href="/home" />
@@ -10,7 +14,7 @@ export default function Layout() {
           header: () => (
             <View
               style={{
-                backgroundColor: '#0077b6',
+                backgroundColor: c.primary,
                 paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 10 : 50,
                 paddingBottom: 15,
                 alignItems: 'center',
@@ -25,5 +29,15 @@ export default function Layout() {
         }}
       />
     </>
+  );
+}
+
+export default function Layout() {
+  return (
+    <ThemeProvider>
+      <MascotaProvider>
+        <AppLayout />
+      </MascotaProvider>
+    </ThemeProvider>
   );
 }

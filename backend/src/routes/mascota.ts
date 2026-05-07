@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import { getMascota, getResumen, updateMascota, updatePropietario, uploadFoto, upload } from '../controllers/mascotaController';
+import { getAllMascotas, createMascotaCompleta, getMascota, getResumen, updateMascota, updatePropietario, uploadFoto, upload } from '../controllers/mascotaController';
 
 const router = Router();
 
+router.get('/', getAllMascotas);
+router.post('/', createMascotaCompleta);
 router.get('/:id', getMascota);
 router.get('/:id/resumen', getResumen);
 router.put('/:id', updateMascota);

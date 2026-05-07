@@ -53,3 +53,11 @@ export interface Resumen {
   ultimaDesparasitacionExterna: Desparasitacion | null;
   ultimoBano: Bano | null;
 }
+
+export interface Peso {
+  id: number;
+  mascota_id: number;
+  fecha: string;
+  peso: number;
+  notas: string;
+}
