@@ -7,7 +7,7 @@ import { useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import { getMascota, updateMascota, updatePropietario, uploadFoto, getVacunas, getDesparasitaciones, getBanos, getPesos, getAllMascotas, createMascotaCompleta, setMascotaId, BASE_URL } from '../../src/services/api';
+import { getMascota, updateMascota, updatePropietario, uploadFoto, getVacunas, getDesparasitaciones, getBanos, getPesos, getAllMascotas, createMascotaCompleta, getPropietarios, createPropietario, setMascotaId, BASE_URL } from '../../src/services/api';
 import { formatDate } from '../../src/utils/format';
 import DateField from '../../src/components/DateField';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -42,6 +42,10 @@ export default function PerfilScreen() {
   const [mascotas, setMascotas] = useState<{ id: number; nombre: string; raza: string }[]>([]);
   const [showNewMascota, setShowNewMascota] = useState(false);
   const [newMascota, setNewMascota] = useState({ nombre: '', especie: '', raza: '', sexo: '', color: '', fecha_nacimiento: '', microchip: '' });
+  const [propietarios, setPropietarios] = useState<{ id: number; nombre: string; telefono: string; direccion: string; email: string }[]>([]);
+  const [selectedPropietarioId, setSelectedPropietarioId] = useState<number | null>(null);
+  const [showNewPropietario, setShowNewPropietario] = useState(false);
+  const [newPropietario, setNewPropietario] = useState({ nombre: '', telefono: '', direccion: '', email: '' });
 
   useFocusEffect(
     useCallback(() => {
@@ -65,14 +69,30 @@ export default function PerfilScreen() {
 
   const handleNewMascota = async () => {
     if (!newMascota.nombre.trim() || !newMascota.especie.trim()) return Alert.alert('Campos requeridos', 'Nombre y especie son obligatorios');
+    if (!selectedPropietarioId) return Alert.alert('Propietario requerido', 'Selecciona o crea un propietario');
     try {
-      await createMascotaCompleta({ ...newMascota, propietario_id: 1 });
+      await createMascotaCompleta({ ...newMascota, propietario_id: selectedPropietarioId });
       Alert.alert('✅ Mascota creada', `${newMascota.nombre} fue registrada`);
       setNewMascota({ nombre: '', especie: '', raza: '', sexo: '', color: '', fecha_nacimiento: '', microchip: '' });
+      setSelectedPropietarioId(null);
       setShowNewMascota(false);
       getAllMascotas().then(setMascotas).catch(() => {});
     } catch {
       Alert.alert('❌ Error', 'No se pudo crear la mascota');
+    }
+  };
+
+  const handleNewPropietario = async () => {
+    if (!newPropietario.nombre.trim()) return Alert.alert('Campo requerido', 'El nombre del propietario es obligatorio');
+    try {
+      const { id } = await createPropietario(newPropietario);
+      Alert.alert('✅ Propietario creado');
+      setSelectedPropietarioId(id);
+      setNewPropietario({ nombre: '', telefono: '', direccion: '', email: '' });
+      setShowNewPropietario(false);
+      getPropietarios().then(setPropietarios).catch(() => {});
+    } catch {
+      Alert.alert('❌ Error', 'No se pudo crear el propietario');
     }
   };
 
@@ -211,7 +231,7 @@ export default function PerfilScreen() {
               <Text style={[styles.selectorBtnText, mascotaId === m.id && styles.selectorBtnTextActive]}>{m.nombre}</Text>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity style={styles.selectorAddBtn} onPress={() => setShowNewMascota(true)}>
+          <TouchableOpacity style={styles.selectorAddBtn} onPress={() => { getPropietarios().then(setPropietarios).catch(() => {}); setShowNewMascota(true); }}>
             <Text style={styles.selectorAddBtnText}>＋</Text>
           </TouchableOpacity>
         </View>
@@ -222,9 +242,7 @@ export default function PerfilScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>🐾 Nueva Mascota</Text>
-              <TouchableOpacity onPress={() => setShowNewMascota(false)}>
-                <Text style={styles.modalClose}>✕</Text>
-              </TouchableOpacity>
+              <TouchableOpacity onPress={() => { setShowNewMascota(false); setShowNewPropietario(false); }}><Text style={styles.modalClose}>✕</Text></TouchableOpacity>
             </View>
             <ScrollView showsVerticalScrollIndicator={false}>
               <TextInput style={styles.modalInput} placeholder="Nombre *" value={newMascota.nombre} onChangeText={(t) => setNewMascota({ ...newMascota, nombre: t })} />
@@ -233,6 +251,35 @@ export default function PerfilScreen() {
               <TextInput style={styles.modalInput} placeholder="Sexo (Macho/Hembra)" value={newMascota.sexo} onChangeText={(t) => setNewMascota({ ...newMascota, sexo: t })} />
               <TextInput style={styles.modalInput} placeholder="Color" value={newMascota.color} onChangeText={(t) => setNewMascota({ ...newMascota, color: t })} />
               <DateField label="Fecha de Nacimiento" value={newMascota.fecha_nacimiento} onChange={(d) => setNewMascota({ ...newMascota, fecha_nacimiento: d })} />
+
+              <Text style={styles.propietarioLabel}>👤 Propietario</Text>
+              <View style={styles.propietarioList}>
+                {propietarios.map((p) => (
+                  <TouchableOpacity
+                    key={p.id}
+                    style={[styles.propietarioBtn, selectedPropietarioId === p.id && styles.propietarioBtnActive]}
+                    onPress={() => setSelectedPropietarioId(p.id)}
+                  >
+                    <Text style={[styles.propietarioBtnText, selectedPropietarioId === p.id && styles.propietarioBtnTextActive]}>{p.nombre}</Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity style={styles.propietarioNewBtn} onPress={() => { setShowNewPropietario(!showNewPropietario); getPropietarios().then(setPropietarios).catch(() => {}); }}>
+                  <Text style={styles.propietarioNewBtnText}>{showNewPropietario ? '✕' : '＋ Nuevo'}</Text>
+                </TouchableOpacity>
+              </View>
+
+              {showNewPropietario && (
+                <View style={styles.newPropietarioForm}>
+                  <TextInput style={styles.modalInput} placeholder="Nombre *" value={newPropietario.nombre} onChangeText={(t) => setNewPropietario({ ...newPropietario, nombre: t })} />
+                  <TextInput style={styles.modalInput} placeholder="Teléfono" value={newPropietario.telefono} onChangeText={(t) => setNewPropietario({ ...newPropietario, telefono: t })} keyboardType="phone-pad" />
+                  <TextInput style={styles.modalInput} placeholder="Dirección" value={newPropietario.direccion} onChangeText={(t) => setNewPropietario({ ...newPropietario, direccion: t })} />
+                  <TextInput style={styles.modalInput} placeholder="Email" value={newPropietario.email} onChangeText={(t) => setNewPropietario({ ...newPropietario, email: t })} keyboardType="email-address" />
+                  <TouchableOpacity style={styles.propietarioSaveBtn} onPress={handleNewPropietario}>
+                    <Text style={styles.modalSaveBtnText}>Crear Propietario</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
               <TouchableOpacity style={styles.modalSaveBtn} onPress={handleNewMascota}>
                 <Text style={styles.modalSaveBtnText}>Registrar Mascota</Text>
               </TouchableOpacity>
@@ -314,6 +361,16 @@ const styles = StyleSheet.create({
   modalInput: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 12, marginBottom: 10, backgroundColor: '#fafafa', fontSize: 15 },
   modalSaveBtn: { backgroundColor: '#0077b6', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 8 },
   modalSaveBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  propietarioLabel: { fontSize: 16, fontWeight: 'bold', color: '#333', marginTop: 12, marginBottom: 8 },
+  propietarioList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
+  propietarioBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#e0e0e0' },
+  propietarioBtnActive: { backgroundColor: '#0077b6' },
+  propietarioBtnText: { fontWeight: '600', color: '#555' },
+  propietarioBtnTextActive: { color: '#fff' },
+  propietarioNewBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#2a9d8f' },
+  propietarioNewBtnText: { fontWeight: '600', color: '#fff' },
+  newPropietarioForm: { backgroundColor: '#f0f9f4', padding: 12, borderRadius: 10, marginBottom: 10 },
+  propietarioSaveBtn: { backgroundColor: '#2a9d8f', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 4 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   image: { width: 160, height: 160, borderRadius: 80, marginBottom: 20 },
   placeholderImage: { width: 160, height: 160, borderRadius: 80, marginBottom: 20, backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center' },

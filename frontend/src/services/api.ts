@@ -80,3 +80,8 @@ export const createPeso = (data: Omit<Peso, 'id' | 'mascota_id'>) =>
 export const updatePeso = (id: number, data: Omit<Peso, 'id' | 'mascota_id'>) =>
   request(`/pesos/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deletePeso = (id: number) => request(`/pesos/${id}`, { method: 'DELETE' });
+
+// Propietarios
+export const getPropietarios = () => request<{ id: number; nombre: string; telefono: string; direccion: string; email: string }[]>('/propietarios');
+export const createPropietario = (data: { nombre: string; telefono: string; direccion: string; email: string }) =>
+  request<{ id: number }>('/propietarios', { method: 'POST', body: JSON.stringify(data) });
