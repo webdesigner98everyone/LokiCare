@@ -8,6 +8,7 @@ import { getVacunas, createVacuna, updateVacuna, deleteVacuna } from '../../src/
 import DateField from '../../src/components/DateField';
 import { formatDate } from '../../src/utils/format';
 import { isValidDate, isNotEmpty } from '../../src/utils/validation';
+import { useTheme } from '../../src/context/ThemeContext';
 import type { Vacuna } from '../../src/types';
 
 type VacunaForm = { fecha: string; producto: string; veterinario: string; proxima: string };
@@ -15,6 +16,7 @@ const EMPTY_FORM: VacunaForm = { fecha: '', producto: '', veterinario: '', proxi
 type Orden = 'desc' | 'asc';
 
 export default function VacunasScreen() {
+  const { c } = useTheme();
   const [vacunas, setVacunas] = useState<Vacuna[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -103,7 +105,7 @@ export default function VacunasScreen() {
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#0077b6" /></View>;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: c.background }]}>
       <View style={styles.topRow}>
         <TouchableOpacity style={styles.addBtn} onPress={openNew}>
           <Text style={styles.addBtnText}>＋ Nueva Vacuna</Text>
@@ -139,12 +141,12 @@ export default function VacunasScreen() {
         refreshing={refreshing}
         onRefresh={onRefresh}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: c.card }]}>
             <TouchableOpacity style={{ flex: 1 }} onPress={() => openEdit(item)}>
-              <Text style={styles.cardTitle}>{item.producto}</Text>
-              <Text style={styles.cardText}>📅 {formatDate(item.fecha)}</Text>
-              <Text style={styles.cardText}>👨‍⚕️ {item.veterinario || 'N/A'}</Text>
-              <Text style={styles.cardText}>⏭️ Próxima: {formatDate(item.proxima)}</Text>
+              <Text style={[styles.cardTitle, { color: c.primary }]}>{item.producto}</Text>
+              <Text style={[styles.cardText, { color: c.textSecondary }]}>📅 {formatDate(item.fecha)}</Text>
+              <Text style={[styles.cardText, { color: c.textSecondary }]}>👨‍⚕️ {item.veterinario || 'N/A'}</Text>
+              <Text style={[styles.cardText, { color: c.textSecondary }]}>⏭️ Próxima: {formatDate(item.proxima)}</Text>
             </TouchableOpacity>
             <View style={styles.cardActions}>
               <TouchableOpacity onPress={() => openEdit(item)}>

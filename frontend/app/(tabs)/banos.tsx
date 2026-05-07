@@ -9,12 +9,14 @@ import DateField from '../../src/components/DateField';
 import TimeField from '../../src/components/TimeField';
 import { formatDate } from '../../src/utils/format';
 import { isValidDate } from '../../src/utils/validation';
+import { useTheme } from '../../src/context/ThemeContext';
 import type { Bano } from '../../src/types';
 
 type BanoForm = { fecha: string; hora: string; observaciones: string };
 const EMPTY_FORM: BanoForm = { fecha: '', hora: '', observaciones: '' };
 
 export default function BanosScreen() {
+  const { c } = useTheme();
   const [banos, setBanos] = useState<Bano[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -95,7 +97,7 @@ export default function BanosScreen() {
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#0077b6" /></View>;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: c.background }]}>
       <TouchableOpacity style={styles.addBtn} onPress={openNew}>
         <Text style={styles.addBtnText}>＋ Nuevo Baño</Text>
       </TouchableOpacity>
@@ -125,11 +127,11 @@ export default function BanosScreen() {
         refreshing={refreshing}
         onRefresh={onRefresh}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: c.card }]}>
             <TouchableOpacity style={{ flex: 1 }} onPress={() => openEdit(item)}>
-              <Text style={styles.cardTitle}>📅 {formatDate(item.fecha)}</Text>
-              <Text style={styles.cardText}>🕐 {item.hora || 'Sin hora'}</Text>
-              <Text style={styles.cardText}>📝 {item.observaciones || 'Sin observaciones'}</Text>
+              <Text style={[styles.cardTitle, { color: c.primary }]}>📅 {formatDate(item.fecha)}</Text>
+              <Text style={[styles.cardText, { color: c.textSecondary }]}>🕐 {item.hora || 'Sin hora'}</Text>
+              <Text style={[styles.cardText, { color: c.textSecondary }]}>📝 {item.observaciones || 'Sin observaciones'}</Text>
             </TouchableOpacity>
             <View style={styles.cardActions}>
               <TouchableOpacity onPress={() => openEdit(item)}>

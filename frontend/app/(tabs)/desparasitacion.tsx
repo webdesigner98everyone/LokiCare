@@ -8,6 +8,7 @@ import { getDesparasitaciones, createDesparasitacion, updateDesparasitacion, del
 import DateField from '../../src/components/DateField';
 import { formatDate } from '../../src/utils/format';
 import { isValidDate, isNotEmpty } from '../../src/utils/validation';
+import { useTheme } from '../../src/context/ThemeContext';
 import type { Desparasitacion } from '../../src/types';
 
 type DesparasitacionForm = { fecha: string; producto: string; proxima: string };
@@ -16,6 +17,7 @@ const EMPTY_FORM: DesparasitacionForm = { fecha: '', producto: '', proxima: '' }
 type Orden = 'desc' | 'asc';
 
 export default function DesparasitacionScreen() {
+  const { c } = useTheme();
   const [tipo, setTipo] = useState<Tipo>('interna');
   const [items, setItems] = useState<Desparasitacion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +106,7 @@ export default function DesparasitacionScreen() {
   });
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: c.background }]}>
       <View style={styles.tabs}>
         <TouchableOpacity style={[styles.tab, tipo === 'interna' && styles.tabActive]} onPress={() => switchTipo('interna')}>
           <Text style={[styles.tabText, tipo === 'interna' && styles.tabTextActive]}>💊 Interna</Text>
@@ -153,11 +155,11 @@ export default function DesparasitacionScreen() {
           refreshing={refreshing}
           onRefresh={onRefresh}
           renderItem={({ item }) => (
-            <View style={styles.card}>
+            <View style={[styles.card, { backgroundColor: c.card }]}>
               <TouchableOpacity style={{ flex: 1 }} onPress={() => openEdit(item)}>
-                <Text style={styles.cardTitle}>{item.producto}</Text>
-                <Text style={styles.cardText}>📅 {formatDate(item.fecha)}</Text>
-                <Text style={styles.cardText}>⏭️ Próxima: {formatDate(item.proxima)}</Text>
+                <Text style={[styles.cardTitle, { color: c.primary }]}>{item.producto}</Text>
+                <Text style={[styles.cardText, { color: c.textSecondary }]}>📅 {formatDate(item.fecha)}</Text>
+                <Text style={[styles.cardText, { color: c.textSecondary }]}>⏭️ Próxima: {formatDate(item.proxima)}</Text>
               </TouchableOpacity>
               <View style={styles.cardActions}>
                 <TouchableOpacity onPress={() => openEdit(item)}>

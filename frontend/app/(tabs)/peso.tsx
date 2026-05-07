@@ -8,12 +8,14 @@ import { getPesos, createPeso, updatePeso, deletePeso } from '../../src/services
 import DateField from '../../src/components/DateField';
 import { formatDate } from '../../src/utils/format';
 import { isValidDate } from '../../src/utils/validation';
+import { useTheme } from '../../src/context/ThemeContext';
 import type { Peso } from '../../src/types';
 
 type PesoForm = { fecha: string; peso: string; notas: string };
 const EMPTY_FORM: PesoForm = { fecha: '', peso: '', notas: '' };
 
 export default function PesoScreen() {
+  const { c } = useTheme();
   const [pesos, setPesos] = useState<Peso[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -79,7 +81,7 @@ export default function PesoScreen() {
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color="#0077b6" /></View>;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: c.background }]}>
       <TouchableOpacity style={styles.addBtn} onPress={openNew}>
         <Text style={styles.addBtnText}>＋ Registrar Peso</Text>
       </TouchableOpacity>
@@ -109,11 +111,11 @@ export default function PesoScreen() {
         refreshing={refreshing}
         onRefresh={onRefresh}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: c.card }]}>
             <TouchableOpacity style={{ flex: 1 }} onPress={() => openEdit(item)}>
-              <Text style={styles.cardTitle}>⚖️ {item.peso} kg</Text>
-              <Text style={styles.cardText}>📅 {formatDate(item.fecha)}</Text>
-              {item.notas ? <Text style={styles.cardText}>📝 {item.notas}</Text> : null}
+              <Text style={[styles.cardTitle, { color: c.primary }]}>⚖️ {item.peso} kg</Text>
+              <Text style={[styles.cardText, { color: c.textSecondary }]}>📅 {formatDate(item.fecha)}</Text>
+              {item.notas ? <Text style={[styles.cardText, { color: c.textSecondary }]}>📝 {item.notas}</Text> : null}
             </TouchableOpacity>
             <View style={styles.cardActions}>
               <TouchableOpacity onPress={() => openEdit(item)}><Text style={styles.editBtn}>✏️</Text></TouchableOpacity>

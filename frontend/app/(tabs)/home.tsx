@@ -4,6 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import { getResumen, BASE_URL } from '../../src/services/api';
 import { formatDate } from '../../src/utils/format';
 import { useMascota } from '../../src/context/MascotaContext';
+import { useTheme } from '../../src/context/ThemeContext';
 import type { Resumen } from '../../src/types';
 
 function calcularEdad(fechaNacimiento: string): string {
@@ -28,6 +29,7 @@ function diasRestantes(fecha: string | null): number | null {
 
 export default function HomeScreen() {
   const { setMascotaNombre } = useMascota();
+  const { c } = useTheme();
   const [data, setData] = useState<Resumen | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,7 +62,7 @@ export default function HomeScreen() {
     : null;
 
   return (
-    <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0077b6']} />}>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: c.background }]} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0077b6']} />}>
       {fotoSource ? (
         <Image source={fotoSource} style={styles.image} />
       ) : (
@@ -68,13 +70,13 @@ export default function HomeScreen() {
           <Text style={styles.placeholderText}>🐾</Text>
         </View>
       )}
-      <Text style={styles.title}>Ficha Médica de {mascota.nombre}</Text>
-      <Text style={styles.subtitle}>{mascota.raza} • {mascota.especie}</Text>
+      <Text style={[styles.title, { color: c.text }]}>Ficha Médica de {mascota.nombre}</Text>
+      <Text style={[styles.subtitle, { color: c.textSecondary }]}>{mascota.raza} • {mascota.especie}</Text>
       {mascota.fecha_nacimiento && (
         <Text style={styles.age}>🎂 {calcularEdad(mascota.fecha_nacimiento)}</Text>
       )}
-      <Text style={styles.text}>Propietario: {mascota.propietario_nombre}</Text>
-      <Text style={styles.text}>Teléfono: {mascota.telefono}</Text>
+      <Text style={[styles.text, { color: c.text }]}>Propietario: {mascota.propietario_nombre}</Text>
+      <Text style={[styles.text, { color: c.text }]}>Teléfono: {mascota.telefono}</Text>
 
       <ResumenCard titulo="🩺 Última Vacuna" item={ultimaVacuna}
         campos={['producto', 'fecha', 'proxima']} />
