@@ -64,7 +64,7 @@ export default function HomeScreen() {
     : null;
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: c.background }]} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0077b6']} />}>
+    <ScrollView style={{ flex: 1, backgroundColor: c.background }} contentContainerStyle={[styles.container, { backgroundColor: c.background }]} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0077b6']} />}>
       {fotoSource ? (
         <Image source={fotoSource} style={styles.image} />
       ) : (
@@ -129,7 +129,7 @@ function ResumenCard({ titulo, item, campos }: ResumenCardProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', padding: 20, backgroundColor: '#f8f9fa' },
+  container: { alignItems: 'center', padding: 20, flexGrow: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   image: { width: 180, height: 180, borderRadius: 90, marginBottom: 20 },
   placeholderImage: { width: 180, height: 180, borderRadius: 90, marginBottom: 20, backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center' },
