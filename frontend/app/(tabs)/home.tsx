@@ -105,18 +105,19 @@ const LABELS: Record<string, string> = {
 const DATE_FIELDS = ['fecha', 'proxima'];
 
 function ResumenCard({ titulo, item, campos }: ResumenCardProps) {
+  const { c } = useTheme();
   if (!item) return null;
   const dias = diasRestantes(item['proxima']?.toString() || null);
   const isUrgent = dias !== null && dias <= 7;
   const isWarning = dias !== null && dias > 7 && dias <= 30;
 
   return (
-    <View style={[styles.section, isUrgent && styles.sectionUrgent, isWarning && styles.sectionWarning]}>
+    <View style={[styles.section, { backgroundColor: c.card }, isUrgent && styles.sectionUrgent, isWarning && styles.sectionWarning]}>
       <Text style={styles.sectionTitle}>{titulo}</Text>
-      {campos.map((c) => {
-        const raw = item[c]?.toString() || null;
-        const display = DATE_FIELDS.includes(c) ? formatDate(raw) : (raw || 'N/A');
-        return <Text key={c} style={styles.text}>{LABELS[c]}: {display}</Text>;
+      {campos.map((campo) => {
+        const raw = item[campo]?.toString() || null;
+        const display = DATE_FIELDS.includes(campo) ? formatDate(raw) : (raw || 'N/A');
+        return <Text key={campo} style={[styles.text, { color: c.text }]}>{LABELS[campo]}: {display}</Text>;
       })}
       {dias !== null && (
         <Text style={[styles.badge, isUrgent && styles.badgeUrgent, isWarning && styles.badgeWarning]}>

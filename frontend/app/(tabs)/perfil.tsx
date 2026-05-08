@@ -23,10 +23,11 @@ interface FieldProps {
 }
 
 function Field({ label, value, editable, onChange }: FieldProps) {
+  const { c } = useTheme();
   return (
     <View style={styles.fieldContainer}>
-      <Text style={styles.label}>{label}:</Text>
-      <TextInput style={[styles.input, !editable && styles.readOnly]} value={value || ''} editable={editable} onChangeText={onChange} />
+      <Text style={[styles.label, { color: c.text }]}>{label}:</Text>
+      <TextInput style={[styles.input, { backgroundColor: c.inputBg, color: c.text, borderColor: c.border }, !editable && { backgroundColor: c.background }]} value={value || ''} editable={editable} onChangeText={onChange} placeholderTextColor={c.textSecondary} />
     </View>
   );
 }
@@ -302,7 +303,7 @@ export default function PerfilScreen() {
       </TouchableOpacity>
       <Text style={styles.name}>{mascota.nombre}</Text>
 
-      <View style={styles.section}>
+      <View style={[styles.section, { backgroundColor: c.card }]}>
         <Text style={styles.sectionTitle}>🐾 Información de la Mascota</Text>
         <Field label="Nombre" value={mascota.nombre} editable={isEditing} onChange={(t) => setMascota({ ...mascota, nombre: t })} />
         <Field label="Especie" value={mascota.especie} editable={isEditing} onChange={(t) => setMascota({ ...mascota, especie: t })} />
@@ -317,7 +318,7 @@ export default function PerfilScreen() {
         <Field label="Microchip" value={mascota.microchip} editable={isEditing} onChange={(t) => setMascota({ ...mascota, microchip: t })} />
       </View>
 
-      <View style={styles.section}>
+      <View style={[styles.section, { backgroundColor: c.card }]}>
         <Text style={styles.sectionTitle}>👤 Información del Propietario</Text>
         <Field label="Nombre" value={propietario.nombre} editable={isEditing} onChange={(t) => setPropietario({ ...propietario, nombre: t })} />
         <Field label="Teléfono" value={propietario.telefono} editable={isEditing} onChange={(t) => setPropietario({ ...propietario, telefono: t })} />
@@ -383,13 +384,13 @@ const styles = StyleSheet.create({
   cameraText: { fontSize: 20 },
   name: { fontSize: 26, fontWeight: 'bold', color: '#0077b6', marginBottom: 8 },
   section: {
-    width: '90%', backgroundColor: '#fff', padding: 15, borderRadius: 12,
+    width: '90%', padding: 15, borderRadius: 12,
     shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, elevation: 2, marginBottom: 25,
   },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#0077b6', marginBottom: 8 },
   fieldContainer: { marginBottom: 12 },
   label: { fontWeight: '600', color: '#333', marginBottom: 4 },
-  input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 8 },
+  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, borderRadius: 8 },
   readOnly: { backgroundColor: '#f1f1f1' },
   button: { padding: 15, borderRadius: 10, alignItems: 'center', width: '90%', marginBottom: 50 },
   buttonText: { color: '#fff', fontWeight: 'bold' },
